@@ -11,6 +11,10 @@ namespace BiliCLOnline.Models
     public class Media : Bearer
     {
         /// <summary>
+        /// 媒体稿件标题
+        /// </summary>
+        public string Title { get; set; }
+        /// <summary>
         /// 收藏数
         /// </summary>
         public int CollectCount { get; set; }

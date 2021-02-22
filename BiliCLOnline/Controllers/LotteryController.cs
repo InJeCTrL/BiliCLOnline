@@ -26,9 +26,19 @@ namespace BiliCLOnline.Controllers
         public async Task<ActionResult<ResultWrapper>> GetLotteryResult(
             string id, int Count, bool UnlimitedStart, bool UnlimitedEnd,
             DateTime Start, DateTime End, bool GETStart, bool LETEnd,
-            bool DuplicatedUID, bool OnlySpecified, HashSet<string> ContentSpecified
+            bool DuplicatedUID, bool OnlySpecified, string ContentSpecified
             )
         {
+            if (Count == 0)
+            {
+                return new ResultWrapper
+                {
+                    Code = 1,
+                    Count = 0,
+                    Data = null,
+                    Message = "期望中奖评论数需大于0"
+                };
+            }
             // 判断评论承载者标准标识符是否合法
             var IsFormalId = await Task.Run(() => Helper.CheckIdHead(id));
             if (!IsFormalId)
@@ -59,7 +69,7 @@ namespace BiliCLOnline.Controllers
                                     Start, End, GETStart, LETEnd, DuplicatedUID,
                                     OnlySpecified, ContentSpecified
                                     );
-            if (ReplyList.Count() == 0)
+            if (!ReplyList.Any())
             {
                 return new ResultWrapper
                 {

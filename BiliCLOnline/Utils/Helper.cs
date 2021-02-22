@@ -20,6 +20,36 @@ namespace BiliCLOnline.Utils
     public class Helper
     {
         /// <summary>
+        /// 根据评论承载者标识符获得评论承载者类型
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <returns></returns>
+        public static BearerType GetBearerTypeById(string Id)
+        {
+            var Parts = GetIdHeadBody(Id);
+            var Btype = BearerType.Error;
+            if (Parts == null)
+            {
+                return Btype;
+            }
+            switch (Parts[0])
+            {
+                case "aid":
+                case "bvid":
+                    Btype = BearerType.Video;
+                    break;
+                case "cv":
+                    Btype = BearerType.Article;
+                    break;
+                case "did":
+                    Btype = BearerType.Dynamic;
+                    break;
+                default:
+                    break;
+            }
+            return Btype;
+        }
+        /// <summary>
         /// 获取评论承载者标识符前缀与本体
         /// </summary>
         /// <param name="Id">评论承载者标识符</param>
@@ -27,11 +57,11 @@ namespace BiliCLOnline.Utils
         public static string[] GetIdHeadBody(string Id)
         {
             var PosSplit = Id.IndexOf('|');
-            if (PosSplit == -1)
+            if (PosSplit == -1 || PosSplit + 1 >= Id.Length)
             {
                 return null;
             }
-            return new string[] { Id.Substring(0, PosSplit), Id.Substring(PosSplit) };
+            return new string[] { Id[0..PosSplit], Id[(PosSplit + 1)..] };
         }
         /// <summary>
         /// 检查评论承载者标识符是否合法
@@ -81,6 +111,44 @@ namespace BiliCLOnline.Utils
                     break;
                 case "bvid":
                     InfoAPIURL = $"https://api.bilibili.com/x/web-interface/archive/stat?bvid={body}";
+                    break;
+                case "cv":
+                    InfoAPIURL = $"https://api.bilibili.com/x/article/viewinfo?id={body}";
+                    break;
+                case "did":
+                    InfoAPIURL = $"https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/get_dynamic_detail?dynamic_id={body}";
+                    break;
+                default:
+                    InfoAPIURL = "";
+                    break;
+            }
+            return InfoAPIURL;
+        }
+        /// <summary>
+        /// 根据评论承载者标识符获取评论承载者详细信息接口URL
+        /// </summary>
+        /// <param name="Id">评论承载者标识符</param>
+        /// <returns></returns>
+        public static string GetBearerDetailAPIURL(string Id)
+        {
+            var parts = GetIdHeadBody(Id);
+            if (parts == null)
+            {
+                return string.Empty;
+            }
+            // 前缀
+            var head = parts[0];
+            // 真实Id
+            var body = parts[1];
+            // 作品信息接口地址
+            string InfoAPIURL;
+            switch (head)
+            {
+                case "aid":
+                    InfoAPIURL = $"https://api.bilibili.com/x/web-interface/view/detail?aid={body}";
+                    break;
+                case "bvid":
+                    InfoAPIURL = $"https://api.bilibili.com/x/web-interface/view/detail?bvid={body}";
                     break;
                 case "cv":
                     InfoAPIURL = $"https://api.bilibili.com/x/article/viewinfo?id={body}";
@@ -194,7 +262,21 @@ namespace BiliCLOnline.Utils
         {
             var InfoAPIURL = GetInfoAPIURL(Id);
             var content = GetResponse(InfoAPIURL);
-            return content.StartsWith("{\"code\":0,");
+            if (!content.StartsWith("{\"code\":0,"))
+            {
+                return false;
+            }
+            var top = JsonSerializer.Deserialize<Dictionary<string, object>>(content);
+            if (!top.ContainsKey("data"))
+            {
+                return false;
+            }
+            var data = JsonSerializer.Deserialize<Dictionary<string, object>>(top["data"].ToString());
+            if (data.Count() == 1 && data.ContainsKey("_gt_"))
+            {
+                return false;
+            }
+            return true;
         }
         /// <summary>
         /// 获取Get请求的响应body
@@ -204,29 +286,39 @@ namespace BiliCLOnline.Utils
         public static string GetResponse(string URL)
         {
             string ret = string.Empty;
-            HttpWebRequest webRequest = (HttpWebRequest)WebRequest.Create(URL);
-            try
+            int TryTime = 5;
+            while (TryTime > 0)
             {
-                using (WebResponse webResponse = webRequest.GetResponse())
+                bool Success = true;
+                HttpWebRequest webRequest = (HttpWebRequest)WebRequest.Create(URL);
+                try
                 {
-                    using (Stream respstream = webResponse.GetResponseStream())
+                    using (WebResponse webResponse = webRequest.GetResponse())
                     {
-                        using (StreamReader streamReader = new StreamReader(respstream))
+                        using (Stream respstream = webResponse.GetResponseStream())
                         {
-                            ret = streamReader.ReadToEnd();
+                            using (StreamReader streamReader = new StreamReader(respstream))
+                            {
+                                ret = streamReader.ReadToEnd();
+                            }
                         }
                     }
                 }
-            }
-            catch
-            {
-                ;
-            }
-            finally
-            {
-                if (webRequest != null)
+                catch
                 {
-                    webRequest.Abort();
+                    Success = false;
+                }
+                finally
+                {
+                    if (webRequest != null)
+                    {
+                        webRequest.Abort();
+                    }
+                    --TryTime;
+                }
+                if (Success)
+                {
+                    break;
                 }
             }
             return ret;
@@ -247,6 +339,131 @@ namespace BiliCLOnline.Utils
                 To.Add(From.ElementAt(pRandom));
                 From[pRandom] = From[i - 1];
             }
+        }
+        public static string GetRealURL(string ShareURL)
+        {
+            string ret = string.Empty;
+            HttpWebRequest webRequest = (HttpWebRequest)WebRequest.Create(ShareURL);
+            webRequest.AllowAutoRedirect = false;
+            try
+            {
+                using (WebResponse webResponse = webRequest.GetResponse())
+                {
+                    ret = webResponse.Headers["Location"];
+                }
+            }
+            catch
+            {
+                ;
+            }
+            finally
+            {
+                if (webRequest != null)
+                {
+                    webRequest.Abort();
+                }
+            }
+            if (ret == null || ret == string.Empty || ret.Length == 0 || ret.Contains("b23.tv"))
+            {
+                return string.Empty;
+            }
+            return ret;
+        }
+        /// <summary>
+        /// 根据ID获取评论承载者标识符
+        /// </summary>
+        /// <param name="RawId"></param>
+        /// <returns></returns>
+        public static string GetFormalIdFromRawId(string RawId)
+        {
+            string Id = string.Empty;
+            if (RawId.Length < 3)
+            {
+                // 动态
+                if (RawId[0] >= '0' && RawId[0] <= '9')
+                {
+                    Id = $"did|{RawId}";
+                }
+            }
+            else
+            {
+                var Prefix = RawId[0..2].ToLower();
+                var Body = RawId[2..];
+                switch (Prefix)
+                {
+                    case "av":
+                        Id = $"aid|{Body}";
+                        break;
+                    case "bv":
+                        Id = $"bvid|{Body}";
+                        break;
+                    case "cv":
+                        Id = $"cv|{Body}";
+                        break;
+                    default:
+                        Id = $"did|{RawId}";
+                        break;
+                }
+            }
+            return Id;
+        }
+        /// <summary>
+        /// 根据ID或URL获取评论承载者标识符
+        /// </summary>
+        /// <param name="pattern"></param>
+        /// <returns></returns>
+        public static string GetFormalIdFromPattern(string pattern)
+        {
+            string RawId = string.Empty;
+            if (pattern == null || pattern == string.Empty || pattern.Length == 0)
+            {
+                return RawId;
+            }
+            // URL
+            if (pattern.StartsWith("http"))
+            {
+                // 需要解析跳转
+                if (pattern.Contains("b23.tv"))
+                {
+                    return GetFormalIdFromPattern(GetRealURL(pattern));
+                }
+                // 只需提取RawId
+                else
+                {
+                    var Lower = pattern.ToLower();
+                    if (Lower.Contains("/av"))
+                    {
+                        RawId = pattern[(Lower.IndexOf("/av") + 1)..];
+                    }
+                    else if (Lower.Contains("/bv"))
+                    {
+                        RawId = pattern[(Lower.IndexOf("/bv") + 1)..];
+                    }
+                    else if (Lower.Contains("/cv"))
+                    {
+                        RawId = pattern[(Lower.IndexOf("/cv") + 1)..];
+                    }
+                    else if (Lower.Contains("t.bilibili.com/") &&
+                        Lower.IndexOf("t.bilibili.com/") + 15 < Lower.Length)
+                    {
+                        RawId = pattern[(Lower.IndexOf("t.bilibili.com/") + 15)..];
+                    }
+                    if (RawId.Contains('?'))
+                    {
+                        RawId = RawId[..RawId.IndexOf('?')];
+                    }
+                    if (RawId.Contains('/'))
+                    {
+                        RawId = RawId[..RawId.IndexOf('/')];
+                    }
+                }
+            }
+            // RawID
+            else
+            {
+                RawId = pattern;
+            }
+            return GetFormalIdFromRawId(RawId);
         }
     }
 }

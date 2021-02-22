@@ -1,12 +1,13 @@
 ﻿using BiliCLOnline.IServices;
 using BiliCLOnline.Models;
+using BiliCLOnline.Utils;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using BiliCLOnline.Utils;
 using System.Text.Json;
-using System.Collections;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace BiliCLOnline.Services
 {
@@ -15,7 +16,7 @@ namespace BiliCLOnline.Services
         public async Task<IEnumerable<Reply>> GetList(
             string id, int Count, bool UnlimitedStart, bool UnlimitedEnd, 
             DateTime Start, DateTime End, bool GETStart, bool LETEnd, 
-            bool DuplicatedUID, bool OnlySpecified, HashSet<string> ContentSpecified
+            bool DuplicatedUID, bool OnlySpecified, string ContentSpecified
             )
         {
             // 满足筛选条件的所有评论
@@ -30,7 +31,7 @@ namespace BiliCLOnline.Services
             int PageCount = int.MaxValue;
             for (int i = 1; i <= PageCount; ++i)
             {
-                var content = await Task.Run(() => Helper.GetResponse(ReplyAPIURL + i.ToString()));
+                var content = Helper.GetResponse(ReplyAPIURL + i.ToString());
                 if (content != string.Empty)
                 {
                     var top = JsonSerializer.Deserialize<Dictionary<string, object>>(content);
@@ -74,21 +75,9 @@ namespace BiliCLOnline.Services
                         var contents = JsonSerializer.Deserialize<Dictionary<string, object>>(reply["content"].ToString());
                         var Content = contents["message"].ToString();
                         // 判断回复内容
-                        if (OnlySpecified)
+                        if (OnlySpecified && !Content.Contains(ContentSpecified))
                         {
-                            bool Right = false;
-                            foreach (var s in ContentSpecified)
-                            {
-                                if (Content.IndexOf(s) != -1)
-                                {
-                                    Right = true;
-                                    break;
-                                }
-                            }
-                            if (!Right)
-                            {
-                                continue;
-                            }
+                            continue;
                         }
                         var ReplyToSave = new Reply
                         {
@@ -104,6 +93,14 @@ namespace BiliCLOnline.Services
                         };
                         TotalList.Add(ReplyToSave);
                     }
+                }
+                else
+                {
+                    return Result;
+                }
+                if (i % 5 == 0)
+                {
+                    Thread.Sleep(500);
                 }
             }
             var TotalListCount = TotalList.Count();
