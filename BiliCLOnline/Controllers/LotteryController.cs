@@ -22,13 +22,17 @@ namespace BiliCLOnline.Controllers
         /// </summary>
         /// <param name="id">评论承载者标准标识符</param>
         /// <returns></returns>
-        [HttpPost("{id}")]
+        [HttpGet("{id}")]
         public async Task<ActionResult<ResultWrapper>> GetLotteryResult(
             string id, int Count, bool UnlimitedStart, bool UnlimitedEnd,
             DateTime Start, DateTime End, bool GETStart, bool LETEnd,
             bool DuplicatedUID, bool OnlySpecified, string ContentSpecified
             )
         {
+            if (ContentSpecified == null)
+            {
+                ContentSpecified = "";
+            }
             if (Count == 0)
             {
                 return new ResultWrapper
