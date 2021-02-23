@@ -34,6 +34,16 @@ namespace BiliCLOnline
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "BiliCLOnline", Version = "v1" });
             });
+            services.AddCors(options => 
+            {
+                options.AddPolicy("cors", p => 
+                { 
+                    p.WithOrigins("http://127.0.0.1")
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials();
+                });
+            });
             services.AddControllers();
         }
 
@@ -49,6 +59,7 @@ namespace BiliCLOnline
                     c.SwaggerEndpoint("/swagger/v1/swagger.json", "HttpReplApi v1");
                 });
             }
+            app.UseCors("cors");
 
             app.UseHttpsRedirection();
 
