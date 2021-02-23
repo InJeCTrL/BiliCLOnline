@@ -34,7 +34,7 @@ namespace BiliCLOnline.Controllers
                 {
                     Code = 1,
                     Count = 0,
-                    Data = 0,
+                    Data = null,
                     Message = "ID或URL无效"
                 };
             }
