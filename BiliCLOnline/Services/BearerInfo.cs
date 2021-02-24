@@ -48,7 +48,7 @@ namespace BiliCLOnline.Services
                             CommentCount = int.Parse(stat["reply"].ToString()),
                             FaceURL = owner["face"].ToString(),
                             Id = Id,
-                            PubTime = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(long.Parse(view["pubdate"].ToString())).ToLocalTime(),
+                            PubTime = new DateTime(1970, 1, 1, 8, 0, 0, DateTimeKind.Utc).AddSeconds(long.Parse(view["pubdate"].ToString())),
                             ShareCount = int.Parse(stat["share"].ToString()),
                             UID = owner["mid"].ToString(),
                             UName = owner["name"].ToString(),
@@ -94,7 +94,7 @@ namespace BiliCLOnline.Services
                         {
                             CommentCount = int.Parse(desc["comment"].ToString()),
                             FaceURL = info["face"].ToString(),
-                            PubTime = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(long.Parse(desc["timestamp"].ToString())).ToLocalTime(),
+                            PubTime = new DateTime(1970, 1, 1, 8, 0, 0, DateTimeKind.Utc).AddSeconds(long.Parse(desc["timestamp"].ToString())),
                             Id = Id,
                             LikeCount = int.Parse(desc["like"].ToString()),
                             ShareCount = int.Parse(desc["repost"].ToString()),

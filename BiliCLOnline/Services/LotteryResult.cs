@@ -50,7 +50,7 @@ namespace BiliCLOnline.Services
                     {
                         var reply = JsonSerializer.Deserialize<Dictionary<string, object>>(o_reply.ToString());
                         var rpid = reply["rpid_str"].ToString();
-                        var PubTime = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(long.Parse(reply["ctime"].ToString())).ToLocalTime();
+                        var PubTime = new DateTime(1970, 1, 1, 8, 0, 0, DateTimeKind.Utc).AddSeconds(long.Parse(reply["ctime"].ToString()));
                         // 判断开始时间
                         if (!UnlimitedStart && Start >= PubTime &&
                             ((GETStart && Start != PubTime) || !GETStart))
