@@ -88,6 +88,11 @@
 														<input type="text" id="type" disabled="disabled" class="layui-input">
 													</div>
 												</div>
+												<div class="layui-inline">
+													<a id="workurl" href="" target="_blank" style="text-align: center;">
+														<div>点此跳转到作品</div>
+													</a>
+												</div>
 											</div>
 											<div class="layui-form-item">
 												<div class="layui-inline">
@@ -107,13 +112,6 @@
 														<img id="face" width="50" height="50" src="" />
 													</a>
 													（点击用户头像进入主页）
-												</div>
-											</div>
-											<div class="layui-form-item">
-												<label class="layui-form-label">目标链接</label>
-												<div class="layui-input-block">
-													<a id="workurl" href="" class="layui-input" target="_blank">
-													</a>
 												</div>
 											</div>
 											<div class="layui-form-item">
@@ -315,7 +313,6 @@
 								$("#id").val(Id);
 								$("#uid").val(bearer["uid"]);
 								$("#uname").val(bearer["uName"]);
-								$("#workurl").text(bearer["url"]);
 								$("#workurl").attr("href", bearer["url"]);
 								$("#like").val(bearer["likeCount"]);
 								$("#share").val(bearer["shareCount"]);
