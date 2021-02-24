@@ -18,6 +18,11 @@
 		<div class="layui-fluid">
 			<ul class="layui-nav layui-bg-green" style="margin-bottom: 25px;">
 				<li class="layui-nav-item layui-this">B站评论区抽奖</li>
+				<li class="layui-nav-item layui-layout-right">
+					<a href="https://github.com/InJeCTrL/BiliCLOnline" target="_blank">
+						<img src="https://github.githubassets.com/favicons/favicon.svg" />
+					</a>
+				</li>
 			</ul>
 			<div class="layui-tab" lay-filter="tabs">
 				<ul class="layui-tab-title" style="display: none;">
@@ -245,7 +250,7 @@
 							</div>
 						</div>
 					</div>
-					<div class="layui-tab-item ">
+					<div class="layui-tab-item">
 						<div class="layui-row">
 							<div class="layui-col-xs6">
 								<button id="back" class="layui-btn layui-bg-cyan layui-btn-lg layui-btn-radius layui-btn-fluid">返回</button>
@@ -257,6 +262,9 @@
 						<table class="layui-hide" id="luckylist" lay-filter="luckylist"></table>
 					</div>
 				</div>
+			</div>
+			<div style="text-align: center;padding-bottom: 10px;">
+				Powered by .NET 5.0
 			</div>
 		</div>
 		<script type="text/html" id="tools">
@@ -293,7 +301,7 @@
 				});
 				$("#set").click(function(){
 					$.ajax({
-						url: "https://127.0.0.1:5001/api/Bearer",
+						url: "http://52.141.2.184:5000/api/Bearer",
 						type: "get",
 						data: { pattern: $("#pattern").val() },
 						crossDomain: true,
@@ -388,7 +396,7 @@
 						}
 					}
 					$.ajax({
-						url: "https://127.0.0.1:5001/api/Lottery/" + Id,
+						url: "http://52.141.2.184:5000/api/Lottery/" + Id,
 						type: "get",
 						data: datasend,
 						crossDomain: true,
