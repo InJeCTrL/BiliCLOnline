@@ -5,8 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text.Json;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace BiliCLOnline.Utils
 {

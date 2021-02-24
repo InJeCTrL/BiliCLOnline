@@ -2,17 +2,10 @@ using BiliCLOnline.IServices;
 using BiliCLOnline.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace BiliCLOnline
 {
@@ -38,7 +31,7 @@ namespace BiliCLOnline
             {
                 options.AddPolicy("cors", p => 
                 { 
-                    p.WithOrigins("http://127.0.0.1")
+                    p.WithOrigins("https://injectrl.github.io", "http://injectrl.github.io")
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials();

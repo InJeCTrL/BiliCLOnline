@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace BiliCLOnline.Models
+﻿namespace BiliCLOnline.Models
 {
     /// <summary>
     /// 媒体稿件（视频/专栏） 的共有属性
