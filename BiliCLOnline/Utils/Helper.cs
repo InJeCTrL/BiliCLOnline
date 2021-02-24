@@ -227,31 +227,34 @@ namespace BiliCLOnline.Utils
         /// <returns></returns>
         public static string GetReplyURL(string Id)
         {
+            var ret = string.Empty;
             var parts = GetIdHeadBody(Id);
             if (parts == null)
             {
-                return string.Empty;
+                return ret;
             }
             // 前缀
             var head = parts[0];
             // 真实Id
             var body = parts[1];
-            if (head == "aid" || head == "bvid")
+            switch (head)
             {
-                return $"https://www.bilibili.com/video/{body}#reply";
+                case "aid":
+                    ret = $"https://www.bilibili.com/video/av{body}#reply";
+                    break;
+                case "bvid":
+                    ret = $"https://www.bilibili.com/video/BV{body}#reply";
+                    break;
+                case "cv":
+                    ret = $"https://www.bilibili.com/read/cv{body}#reply";
+                    break;
+                case "did":
+                    ret = $"https://t.bilibili.com/{body}#reply";
+                    break;
+                default:
+                    break;
             }
-            else if (head == "cv")
-            {
-                return $"https://www.bilibili.com/read/{body}#reply";
-            }
-            else if (head == "did")
-            {
-                return $"https://t.bilibili.com/{body}#reply";
-            }
-            else
-            {
-                return string.Empty;
-            }
+            return ret;
         }
         /// <summary>
         /// 检查评论承载者Id是否对应有效的媒体稿件/动态
