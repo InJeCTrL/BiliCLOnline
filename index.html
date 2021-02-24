@@ -271,7 +271,7 @@
 		<script type="text/javascript">
 			var Id = "";
 			function NiceTime(time){
-				return time.replace('T', ' ').substring(0, time.indexOf('+'));
+				return time.replace('T', ' ').substring(0, time.indexOf('Z'));
 			}
 			layui.use(['layer', 'element', 'form', 'layedit', 'laydate', 'table'], function(){
 				var layer = layui.layer
