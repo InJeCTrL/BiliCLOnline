@@ -31,7 +31,7 @@ namespace BiliCLOnline
             {
                 options.AddPolicy("cors", p => 
                 { 
-                    p.WithOrigins("https://injectrl.github.io", "http://injectrl.github.io")
+                    p.WithOrigins("https://injectrl.github.io")
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials();
