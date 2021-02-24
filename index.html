@@ -330,6 +330,7 @@
 										$("#collect").val(bearer["collectCount"]);
 										$("#coin").val(bearer["coinCount"]);
 										$("#pubtime").val(NiceTime(bearer["pubTime"]));
+										element.tabChange('tabs', 'second');
 										break;
 									case 1:
 										$("#type").val("专栏稿件");
@@ -339,6 +340,7 @@
 										$("#coin").val(bearer["coinCount"]);
 										$("#pubContainer").css("display", "none");
 										$("#faceContainer").css("display", "none");
+										element.tabChange('tabs', 'second');
 										break;
 									case 2:
 										$("#type").val("动态");
@@ -349,13 +351,13 @@
 										$("#viewContainer").css("display", "none");
 										$("#collectContainer").css("display", "none");
 										$("#coinContainer").css("display", "none");
+										element.tabChange('tabs', 'second');
 										break;
 									default:
 										console.log(data);
 										break;
 								}
 							}
-							element.tabChange('tabs', 'second');
 						},
 						error: function(e){
 							layer.msg("服务暂不可用");
