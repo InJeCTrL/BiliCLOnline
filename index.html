@@ -299,7 +299,7 @@
 				});
 				$("#set").click(function(){
 					$.ajax({
-						url: "https://injectrl.xyz:5000/api/Bearer",
+						url: "https://injectrl.xyz/api/Bearer",
 						type: "get",
 						data: { pattern: $("#pattern").val() },
 						crossDomain: true,
@@ -395,7 +395,7 @@
 						}
 					}
 					$.ajax({
-						url: "https://injectrl.xyz:5000/api/Lottery/" + Id,
+						url: "https://injectrl.xyz/api/Lottery/" + Id,
 						type: "get",
 						data: datasend,
 						crossDomain: true,
