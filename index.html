@@ -394,7 +394,7 @@
 							return;
 						}
 					}
-					if ($("#unlimitedstart").is(':checked') && $("#unlimitedend").is(':checked')){
+					if (!$("#unlimitedstart").is(':checked') && !$("#unlimitedend").is(':checked')){
 						var s = new Date($("#startdate").val());
 						var e = new Date($("#enddate").val());
 						if (s.getTime() >= e.getTime()){
