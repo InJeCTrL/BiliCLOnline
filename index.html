@@ -416,11 +416,11 @@
 									elem: '#luckylist',
 									cols: [[
 										{
-											field: 'faceURL', title: '明细', event: 'gotoURL', style:'visibility: hidden;',
+											field: 'faceURL', title: '明细', style:'visibility: hidden;',
 											templet: function(d){
 												return '<div><a href="' + d.userHomeURL + '" target="_blank"><img src="' + d.faceURL + 
-												'" width=50 height=50></a><br>' + d.uName + '</div><br>评论内容节选: ' + 
-												d.content.substring(0, 30) + '<br>获赞数: ' + d.likeCount + '<br>时间: ' + NiceTime(d.pubTime);
+												'" width=50 height=50></a><br>' + d.uName + '</div><br>评论内容节选: <a href="' + d.url + '" target="_blank">' + 
+												d.content.substring(0, 30) + '</a><br>获赞数: ' + d.likeCount + '<br>时间: ' + NiceTime(d.pubTime);
 												},
 										},
 										{
@@ -431,10 +431,6 @@
 								});
 								table.on('tool(luckylist)', function(obj){
 									switch (obj.event){
-										case 'gotoURL':
-											var data = obj.data;
-											window.open(data["url"], '_blank'); 
-											break;
 										case 'open':
 											obj.tr[0].firstChild.setAttribute('style', 'cursor: pointer;');
 											break;
