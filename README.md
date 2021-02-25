@@ -81,5 +81,8 @@
 - 后端WebAPI: DotNet 5.0
 - 前端UI: LayUI 2.5.7
 
+## 目前服务器端
 
+由nginx作为代理转发https请求至运行后端WebAPI-Server的Docker容器
 
+基于DotNet 5.0的WebAPI-Server只响应http请求，所有https请求由nginx负责转发
