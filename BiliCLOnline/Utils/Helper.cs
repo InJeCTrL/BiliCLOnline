@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text.Json;
+using System.Threading;
 
 namespace BiliCLOnline.Utils
 {
@@ -17,6 +18,10 @@ namespace BiliCLOnline.Utils
     }
     public class Helper
     {
+        /// <summary>
+        /// 向Bilibili发出网络请求的互斥锁
+        /// </summary>
+        private static readonly object RequestLock = new object();
         /// <summary>
         /// 根据评论承载者标识符获得评论承载者类型
         /// </summary>
@@ -185,7 +190,7 @@ namespace BiliCLOnline.Utils
             else if (head == "cv")
             {
                 WorkType = 12;
-                return $"https://api.bilibili.com/x/v2/reply?oid={OID}&type={WorkType}&sort=0&pn=";
+                return $"https://api.bilibili.com/x/v2/reply?oid={OID}&type={WorkType}&sort=0&ps=49&pn=";
             }
             else if (head == "did")
             {
@@ -294,15 +299,19 @@ namespace BiliCLOnline.Utils
                 HttpWebRequest webRequest = (HttpWebRequest)WebRequest.Create(URL);
                 try
                 {
-                    using (WebResponse webResponse = webRequest.GetResponse())
+                    lock (RequestLock)
                     {
-                        using (Stream respstream = webResponse.GetResponseStream())
+                        using (WebResponse webResponse = webRequest.GetResponse())
                         {
-                            using (StreamReader streamReader = new StreamReader(respstream))
+                            using (Stream respstream = webResponse.GetResponseStream())
                             {
-                                ret = streamReader.ReadToEnd();
+                                using (StreamReader streamReader = new StreamReader(respstream))
+                                {
+                                    ret = streamReader.ReadToEnd();
+                                }
                             }
                         }
+                        Thread.Sleep(100);
                     }
                 }
                 catch

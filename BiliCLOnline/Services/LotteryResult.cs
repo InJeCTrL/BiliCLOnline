@@ -43,7 +43,7 @@ namespace BiliCLOnline.Services
                         {
                             return Result;
                         }
-                        PageCount = (int)Math.Ceiling(page["count"] / 20.0);
+                        PageCount = (int)Math.Ceiling(page["count"] / 49.0);
                     }
                     var replies = JsonSerializer.Deserialize<IList>(data["replies"].ToString());
                     foreach (var o_reply in replies)
@@ -97,10 +97,6 @@ namespace BiliCLOnline.Services
                 else
                 {
                     return Result;
-                }
-                if (i % 5 == 0)
-                {
-                    Thread.Sleep(500);
                 }
             }
             var TotalListCount = TotalList.Count();
