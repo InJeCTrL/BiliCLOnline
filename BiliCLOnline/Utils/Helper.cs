@@ -420,6 +420,11 @@ namespace BiliCLOnline.Utils
             {
                 return RawId;
             }
+            // 去除可能包含的锚定
+            if (pattern.Contains('#'))
+            {
+                pattern = pattern[..pattern.IndexOf('#')];
+            }
             // URL
             if (pattern.StartsWith("http"))
             {
