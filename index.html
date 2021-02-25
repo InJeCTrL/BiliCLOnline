@@ -394,6 +394,14 @@
 							return;
 						}
 					}
+					if ($("#unlimitedstart").is(':checked') && $("#unlimitedend").is(':checked')){
+						var s = new Date($("#startdate").val());
+						var e = new Date($("#enddate").val());
+						if (s.getTime() >= e.getTime()){
+							layer.msg("开始时间需要小于截止时间");
+							return;
+						}
+					}
 					$.ajax({
 						url: "https://biliclonline.injectrl.xyz/api/Lottery/" + Id,
 						type: "get",
