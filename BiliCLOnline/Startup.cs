@@ -54,8 +54,6 @@ namespace BiliCLOnline
             }
             app.UseCors("cors");
 
-            app.UseHttpsRedirection();
-
             app.UseRouting();
 
             app.UseAuthorization();
