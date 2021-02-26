@@ -221,7 +221,7 @@ namespace BiliCLOnline.Utils
             {
                 OID = data["aid"].ToString();
             }
-            return $"https://api.bilibili.com/x/v2/reply?oid={OID}&type={WorkType}&sort=0&pn=";
+            return $"https://api.bilibili.com/x/v2/reply?oid={OID}&type={WorkType}&sort=0&ps=49&pn=";
         }
         /// <summary>
         /// 评论条目URL
@@ -293,9 +293,10 @@ namespace BiliCLOnline.Utils
         {
             string ret = string.Empty;
             int TryTime = 5;
-            while (TryTime > 0)
+            bool Success = false;
+            while (!Success && TryTime > 0)
             {
-                bool Success = true;
+                Success = true;
                 HttpWebRequest webRequest = (HttpWebRequest)WebRequest.Create(URL);
                 try
                 {
@@ -325,10 +326,6 @@ namespace BiliCLOnline.Utils
                         webRequest.Abort();
                     }
                     --TryTime;
-                }
-                if (Success)
-                {
-                    break;
                 }
             }
             return ret;
