@@ -311,7 +311,7 @@ namespace BiliCLOnline.Utils
                                 }
                             }
                         }
-                        Thread.Sleep(100);
+                        Thread.Sleep(250);
                     }
                 }
                 catch
@@ -390,7 +390,7 @@ namespace BiliCLOnline.Utils
             if (RawId.Length < 3)
             {
                 // 动态
-                if (RawId[0] >= '0' && RawId[0] <= '9')
+                if (RawId.Length >= 1 && RawId[0] >= '0' && RawId[0] <= '9')
                 {
                     Id = $"did|{RawId}";
                 }
