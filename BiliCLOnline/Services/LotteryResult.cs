@@ -26,6 +26,10 @@ namespace BiliCLOnline.Services
             // UID集合，用于排除重复UID
             var UIDs = new HashSet<string>();
             var ReplyAPIURL = await Task.Run(() => Helper.GetReplyAPIURL(id));
+            if (ReplyAPIURL.Length == 0)
+            {
+                return Result;
+            }
             var ReplyURL = await Task.Run(() => Helper.GetReplyURL(id));
             // 评论页数
             int PageCount = int.MaxValue;

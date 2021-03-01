@@ -31,6 +31,10 @@ namespace BiliCLOnline.Services
             }
             // 针对每种评论承载者做对应处理
             var Content = await Task.Run(() => Helper.GetResponse(DetailAPIURL));
+            if (Content.Length == 0)
+            {
+                return ErrWrapper;
+            }
             var top = JsonSerializer.Deserialize<Dictionary<string, object>>(Content);
             var data = JsonSerializer.Deserialize<Dictionary<string, object>>(top["data"].ToString());
             switch (Helper.GetBearerTypeById(Id))

@@ -201,6 +201,10 @@ namespace BiliCLOnline.Utils
                 return string.Empty;
             }
             var content = GetResponse(GetInfoAPIURL(Id));
+            if (content.Length == 0)
+            {
+                return string.Empty;
+            }
             var top = JsonSerializer.Deserialize<Dictionary<string, object>>(content);
             var data = JsonSerializer.Deserialize<Dictionary<string, object>>(top["data"].ToString());
             // 动态需要判断是否存在rid
