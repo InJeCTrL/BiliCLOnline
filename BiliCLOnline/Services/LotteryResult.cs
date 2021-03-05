@@ -25,91 +25,94 @@ namespace BiliCLOnline.Services
             var Result = new List<Reply>();
             // UID集合，用于排除重复UID
             var UIDs = new HashSet<string>();
+            // 评论区信息接口
             var ReplyAPIURL = await Task.Run(() => Helper.GetReplyAPIURL(id));
-            if (ReplyAPIURL.Length == 0)
+            if (ReplyAPIURL != string.Empty)
             {
-                return Result;
-            }
-            var ReplyURL = await Task.Run(() => Helper.GetReplyURL(id));
-            // 评论页数
-            int PageCount = int.MaxValue;
-            for (int i = 1; i <= PageCount; ++i)
-            {
-                var content = Helper.GetResponse(ReplyAPIURL + i.ToString());
-                if (content != string.Empty)
+                // 评论条目URL
+                var ReplyURL = await Task.Run(() => Helper.GetReplyURL(id));
+                if (ReplyURL != string.Empty)
                 {
-                    var top = JsonSerializer.Deserialize<Dictionary<string, object>>(content);
-                    var data = JsonSerializer.Deserialize<Dictionary<string, object>>(top["data"].ToString());
-                    var page = JsonSerializer.Deserialize<Dictionary<string, int>>(data["page"].ToString());
-                    if (i == 1)
+                    // 评论页数
+                    int PageCount = int.MaxValue;
+                    for (int i = 1; i <= PageCount; ++i)
                     {
-                        if (page["count"] < Count)
+                        var content = WebHelper.GetResponse(ReplyAPIURL + i.ToString(), "{\"code\":0,");
+                        if (content != string.Empty)
                         {
-                            return Result;
+                            var top = JsonSerializer.Deserialize<Dictionary<string, object>>(content);
+                            var data = JsonSerializer.Deserialize<Dictionary<string, object>>(top["data"].ToString());
+                            var page = JsonSerializer.Deserialize<Dictionary<string, int>>(data["page"].ToString());
+                            if (i == 1)
+                            {
+                                if (page["count"] < Count)
+                                {
+                                    break;
+                                }
+                                PageCount = (int)Math.Ceiling(page["count"] / 49.0);
+                            }
+                            var replies = JsonSerializer.Deserialize<IList>(data["replies"].ToString());
+                            foreach (var o_reply in replies)
+                            {
+                                var reply = JsonSerializer.Deserialize<Dictionary<string, object>>(o_reply.ToString());
+                                var rpid = reply["rpid_str"].ToString();
+                                var PubTime = new DateTime(1970, 1, 1, 8, 0, 0, DateTimeKind.Utc).AddSeconds(long.Parse(reply["ctime"].ToString()));
+                                // 判断开始时间
+                                if (!UnlimitedStart && Start >= PubTime &&
+                                    ((GETStart && Start != PubTime) || !GETStart))
+                                {
+                                    continue;
+                                }
+                                // 判断结束时间
+                                if (!UnlimitedEnd && End <= PubTime &&
+                                    ((LETEnd && End != PubTime) || !LETEnd))
+                                {
+                                    continue;
+                                }
+                                var member = JsonSerializer.Deserialize<Dictionary<string, object>>(reply["member"].ToString());
+                                var UName = member["uname"].ToString();
+                                var Avatar = member["avatar"].ToString();
+                                var UID = member["mid"].ToString();
+                                // 判断重复UID
+                                if (!DuplicatedUID && !UIDs.Add(UID))
+                                {
+                                    continue;
+                                }
+                                var contents = JsonSerializer.Deserialize<Dictionary<string, object>>(reply["content"].ToString());
+                                var Content = contents["message"].ToString();
+                                // 判断回复内容
+                                if (OnlySpecified && !Content.Contains(ContentSpecified))
+                                {
+                                    continue;
+                                }
+                                var ReplyToSave = new Reply
+                                {
+                                    Id = rpid,
+                                    URL = ReplyURL + rpid,
+                                    LikeCount = int.Parse(reply["like"].ToString()),
+                                    UID = UID,
+                                    Content = Content,
+                                    PubTime = PubTime,
+                                    UName = member["uname"].ToString(),
+                                    UserHomeURL = $"https://space.bilibili.com/{UID}",
+                                    FaceURL = Avatar
+                                };
+                                TotalList.Add(ReplyToSave);
+                            }
                         }
-                        PageCount = (int)Math.Ceiling(page["count"] / 49.0);
+                        else
+                        {
+                            break;
+                        }
                     }
-                    var replies = JsonSerializer.Deserialize<IList>(data["replies"].ToString());
-                    foreach (var o_reply in replies)
+                    var TotalListCount = TotalList.Count;
+                    // 经过条件筛选后的评论数大等于预期得奖数
+                    if (TotalListCount >= Count)
                     {
-                        var reply = JsonSerializer.Deserialize<Dictionary<string, object>>(o_reply.ToString());
-                        var rpid = reply["rpid_str"].ToString();
-                        var PubTime = new DateTime(1970, 1, 1, 8, 0, 0, DateTimeKind.Utc).AddSeconds(long.Parse(reply["ctime"].ToString()));
-                        // 判断开始时间
-                        if (!UnlimitedStart && Start >= PubTime &&
-                            ((GETStart && Start != PubTime) || !GETStart))
-                        {
-                            continue;
-                        }
-                        // 判断结束时间
-                        if (!UnlimitedEnd && End <= PubTime &&
-                            ((LETEnd && End != PubTime) || !LETEnd))
-                        {
-                            continue;
-                        }
-                        var member = JsonSerializer.Deserialize<Dictionary<string, object>>(reply["member"].ToString());
-                        var UName = member["uname"].ToString();
-                        var Avatar = member["avatar"].ToString();
-                        var UID = member["mid"].ToString();
-                        // 判断重复UID
-                        if (!DuplicatedUID && !UIDs.Add(UID))
-                        {
-                            continue;
-                        }
-                        var contents = JsonSerializer.Deserialize<Dictionary<string, object>>(reply["content"].ToString());
-                        var Content = contents["message"].ToString();
-                        // 判断回复内容
-                        if (OnlySpecified && !Content.Contains(ContentSpecified))
-                        {
-                            continue;
-                        }
-                        var ReplyToSave = new Reply
-                        {
-                            Id = rpid,
-                            URL = ReplyURL + rpid,
-                            LikeCount = int.Parse(reply["like"].ToString()),
-                            UID = UID,
-                            Content = Content,
-                            PubTime = PubTime,
-                            UName = member["uname"].ToString(),
-                            UserHomeURL = $"https://space.bilibili.com/{UID}",
-                            FaceURL = Avatar
-                        };
-                        TotalList.Add(ReplyToSave);
+                        Helper.GetRandomResultList(Result, TotalList, Count);
                     }
                 }
-                else
-                {
-                    return Result;
-                }
             }
-            var TotalListCount = TotalList.Count();
-            // 经过条件筛选后的评论数少于预期得奖数，直接返回空列表
-            if (TotalListCount < Count)
-            {
-                return Result;
-            }
-            Helper.GetRandomResultList(Result, TotalList, Count);
             return Result;
         }
     }
