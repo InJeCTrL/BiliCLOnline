@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace BiliCLOnline.Utils
 {
@@ -64,7 +65,7 @@ namespace BiliCLOnline.Utils
         /// </summary>
         /// <param name="Id">评论承载者标准标识符</param>
         /// <returns>格式化正确: true, 格式化错误: false</returns>
-        public static bool CheckIdHead(string Id)
+        public static Task<bool> CheckIdHead(string Id)
         {
             var parts = GetIdHeadBody(Id);
             if (parts != null && parts.Length == 2)
@@ -73,10 +74,10 @@ namespace BiliCLOnline.Utils
                 if (head == "aid" || head == "bvid" ||
                     head == "cv" || head == "did")
                 {
-                    return true;
+                    return Task.FromResult(true);
                 }
             }
-            return false;
+            return Task.FromResult(false);
         }
         /// <summary>
         /// 根据评论承载者标识符获取评论承载者信息接口URL

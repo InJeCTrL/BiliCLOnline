@@ -10,19 +10,19 @@ namespace BiliCLOnline.Services
 {
     public class BearerInfo : IBearerInfo
     {
-        public async Task<BearerWrapper> Get(string pattern)
+        public Task<BearerWrapper> Get(string pattern)
         {
             // 获取评论承载者标识符
-            var Id = await Task.Run(()=> Helper.GetFormalIdFromPattern(pattern));
+            var Id = Helper.GetFormalIdFromPattern(pattern);
             // 评论承载者标识符格式化正确并且通过验证
-            if (Id != string.Empty && await Task.Run(() => Helper.IsValidId(Id)))
+            if (Id != string.Empty && Helper.IsValidId(Id))
             {
                 // 获取评论承载者详细信息接口URL
                 var DetailAPIURL = Helper.GetBearerDetailAPIURL(Id);
                 if (DetailAPIURL != string.Empty)
                 {
                     // 针对每种评论承载者做对应处理
-                    var Content = await Task.Run(() => WebHelper.GetResponse(DetailAPIURL, "{\"code\":0,"));
+                    var Content = WebHelper.GetResponse(DetailAPIURL, "{\"code\":0,");
                     if (Content != string.Empty)
                     {
                         var top = JsonSerializer.Deserialize<Dictionary<string, object>>(Content);
@@ -34,7 +34,7 @@ namespace BiliCLOnline.Services
                                 var BVID = view["bvid"].ToString();
                                 var owner = JsonSerializer.Deserialize<Dictionary<string, object>>(view["owner"].ToString());
                                 var stat = JsonSerializer.Deserialize<Dictionary<string, object>>(view["stat"].ToString());
-                                return new BearerWrapper
+                                return Task.FromResult(new BearerWrapper
                                 {
                                     Type = BearerType.Video,
                                     Bearer = new Video
@@ -54,10 +54,10 @@ namespace BiliCLOnline.Services
                                         Title = view["title"].ToString(),
                                         ViewCount = int.Parse(stat["view"].ToString())
                                     }
-                                };
+                                });
                             case BearerType.Article:
                                 var stats = JsonSerializer.Deserialize<Dictionary<string, object>>(data["stats"].ToString());
-                                return new BearerWrapper
+                                return Task.FromResult(new BearerWrapper
                                 {
                                     Type = BearerType.Article,
                                     Bearer = new Article
@@ -75,13 +75,13 @@ namespace BiliCLOnline.Services
                                         UserHomeURL = $"https://space.bilibili.com/{data["mid"]}",
                                         URL = $"https://www.bilibili.com/read/{Id[(Id.IndexOf("|") + 1)..]}",
                                     }
-                                };
+                                });
                             case BearerType.Dynamic:
                                 var card = JsonSerializer.Deserialize<Dictionary<string, object>>(data["card"].ToString());
                                 var desc = JsonSerializer.Deserialize<Dictionary<string, object>>(card["desc"].ToString());
                                 var user_profile = JsonSerializer.Deserialize<Dictionary<string, object>>(desc["user_profile"].ToString());
                                 var info = JsonSerializer.Deserialize<Dictionary<string, object>>(user_profile["info"].ToString());
-                                return new BearerWrapper
+                                return Task.FromResult(new BearerWrapper
                                 {
                                     Type = BearerType.Dynamic,
                                     Bearer = new Dynamic
@@ -97,18 +97,18 @@ namespace BiliCLOnline.Services
                                         UserHomeURL = $"https://space.bilibili.com/{desc["uid"]}",
                                         URL = $"https://t.bilibili.com/{desc["dynamic_id"]}"
                                     }
-                                };
+                                });
                             default:
                                 break;
                         }
                     }
                 }
             }
-            return new BearerWrapper
+            return Task.FromResult(new BearerWrapper
             {
                 Type = BearerType.Error,
                 Bearer = null
-            };
+            });
         }
     }
 }

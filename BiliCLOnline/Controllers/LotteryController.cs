@@ -43,7 +43,7 @@ namespace BiliCLOnline.Controllers
                 };
             }
             // 判断评论承载者标准标识符是否合法
-            var IsFormalId = await Task.Run(() => Helper.CheckIdHead(id));
+            var IsFormalId = await Helper.CheckIdHead(id);
             if (!IsFormalId)
             {
                 return new ResultWrapper
@@ -55,7 +55,7 @@ namespace BiliCLOnline.Controllers
                 };
             }
             // 检查是否是有效标识符
-            var IsValidId = await Task.Run(() => Helper.IsValidId(id));
+            var IsValidId = Helper.IsValidId(id);
             if (!IsValidId)
             {
                 return new ResultWrapper
@@ -67,11 +67,11 @@ namespace BiliCLOnline.Controllers
                 };
             }
             // 获取抽奖结果
-            var ReplyList = await _lotteryResult.GetList(
-                                    id, Count, UnlimitedStart, UnlimitedEnd,
-                                    Start, End, GETStart, LETEnd, DuplicatedUID,
-                                    OnlySpecified, ContentSpecified
-                                    );
+            var ReplyList = _lotteryResult.GetList(
+                            id, Count, UnlimitedStart, UnlimitedEnd,
+                            Start, End, GETStart, LETEnd, DuplicatedUID,
+                            OnlySpecified, ContentSpecified
+                            );
             if (!ReplyList.Any())
             {
                 return new ResultWrapper

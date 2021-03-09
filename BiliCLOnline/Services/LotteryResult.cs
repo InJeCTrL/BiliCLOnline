@@ -13,7 +13,7 @@ namespace BiliCLOnline.Services
 {
     public class LotteryResult : ILotteryResult
     {
-        public async Task<IEnumerable<Reply>> GetList(
+        public IEnumerable<Reply> GetList(
             string id, int Count, bool UnlimitedStart, bool UnlimitedEnd, 
             DateTime Start, DateTime End, bool GETStart, bool LETEnd, 
             bool DuplicatedUID, bool OnlySpecified, string ContentSpecified
@@ -26,11 +26,11 @@ namespace BiliCLOnline.Services
             // UID集合，用于排除重复UID
             var UIDs = new HashSet<string>();
             // 评论区信息接口
-            var ReplyAPIURL = await Task.Run(() => Helper.GetReplyAPIURL(id));
+            var ReplyAPIURL = Helper.GetReplyAPIURL(id);
             if (ReplyAPIURL != string.Empty)
             {
                 // 评论条目URL
-                var ReplyURL = await Task.Run(() => Helper.GetReplyURL(id));
+                var ReplyURL = Helper.GetReplyURL(id);
                 if (ReplyURL != string.Empty)
                 {
                     // 评论页数
