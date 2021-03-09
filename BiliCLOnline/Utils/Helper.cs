@@ -372,7 +372,7 @@ namespace BiliCLOnline.Utils
                         }
                         if (RawId.Length > 0)
                         {
-                            return RawId;
+                            return GetFormalIdFromRawId(RawId);
                         }
                     }
                 }
