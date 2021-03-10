@@ -42,7 +42,7 @@ namespace BiliCLOnline.Utils
         /// B站接口请求锁: 防止并发请求B站接口时重复实例化BiliRequestClient
         /// </summary>
         private static readonly object BiliRequestLock = new object();
-        private static string ProxyAPIURL = "https://ip.jiangxianli.com/api/proxy_ips?order_by=validated_at&order_rule=DESC";
+        private static string ProxyAPIURL = "https://ip.jiangxianli.com/api/proxy_ips?order_by=validated_at&country=中国&order_rule=DESC";
         /// <summary>
         /// 获取网页响应
         /// </summary>
