@@ -14,7 +14,8 @@ namespace BiliCLOnline.IServices
         public IEnumerable<Reply> GetList(
             string id, int Count, bool UnlimitedStart, bool UnlimitedEnd,
             DateTime Start, DateTime End, bool GETStart, bool LETEnd,
-            bool DuplicatedUID, bool OnlySpecified, string ContentSpecified
+            bool DuplicatedUID, bool OnlySpecified, string ContentSpecified,
+            out string ResultTip
             );
     }
 }

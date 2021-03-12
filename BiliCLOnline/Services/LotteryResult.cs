@@ -4,10 +4,7 @@ using BiliCLOnline.Utils;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace BiliCLOnline.Services
 {
@@ -16,7 +13,8 @@ namespace BiliCLOnline.Services
         public IEnumerable<Reply> GetList(
             string id, int Count, bool UnlimitedStart, bool UnlimitedEnd, 
             DateTime Start, DateTime End, bool GETStart, bool LETEnd, 
-            bool DuplicatedUID, bool OnlySpecified, string ContentSpecified
+            bool DuplicatedUID, bool OnlySpecified, string ContentSpecified,
+            out string ResultTip
             )
         {
             // 满足筛选条件的所有评论
@@ -35,6 +33,7 @@ namespace BiliCLOnline.Services
                 {
                     // 评论页数
                     int PageCount = int.MaxValue;
+                    ResultTip = "";
                     for (int i = 1; i <= PageCount; ++i)
                     {
                         var content = WebHelper.GetResponse(ReplyAPIURL + i.ToString(), "{\"code\":0,");
@@ -43,6 +42,7 @@ namespace BiliCLOnline.Services
                             var top = JsonSerializer.Deserialize<Dictionary<string, object>>(content);
                             var data = JsonSerializer.Deserialize<Dictionary<string, object>>(top["data"].ToString());
                             var page = JsonSerializer.Deserialize<Dictionary<string, int>>(data["page"].ToString());
+                            // 第一页需要设置评论总页数
                             if (i == 1)
                             {
                                 if (page["count"] < Count)
@@ -50,6 +50,11 @@ namespace BiliCLOnline.Services
                                     break;
                                 }
                                 PageCount = (int)Math.Ceiling(page["count"] / 49.0);
+                                if (PageCount > 300)
+                                {
+                                    ResultTip = "抽奖目标的评论页数过多，拒绝抽奖";
+                                    break;
+                                }
                             }
                             var replies = JsonSerializer.Deserialize<IList>(data["replies"].ToString());
                             foreach (var o_reply in replies)
@@ -99,19 +104,36 @@ namespace BiliCLOnline.Services
                                 };
                                 TotalList.Add(ReplyToSave);
                             }
+                            // 最后一页
+                            if (i == PageCount)
+                            {
+                                var TotalListCount = TotalList.Count;
+                                // 经过条件筛选后的评论数大等于预期得奖数
+                                if (TotalListCount >= Count)
+                                {
+                                    Helper.GetRandomResultList(Result, TotalList, Count);
+                                }
+                                else
+                                {
+                                    ResultTip = "预定中奖评论数大于筛选后的评论数，请重新选择";
+                                }
+                            }
                         }
                         else
                         {
+                            ResultTip = "触发B站风控机制，网络异常，请稍后再试";
                             break;
                         }
                     }
-                    var TotalListCount = TotalList.Count;
-                    // 经过条件筛选后的评论数大等于预期得奖数
-                    if (TotalListCount >= Count)
-                    {
-                        Helper.GetRandomResultList(Result, TotalList, Count);
-                    }
                 }
+                else
+                {
+                    ResultTip = "暂不支持对此类型作品进行抽奖";
+                }
+            }
+            else
+            {
+                ResultTip = "获取评论区信息接口失败，请稍后重试";
             }
             return Result;
         }

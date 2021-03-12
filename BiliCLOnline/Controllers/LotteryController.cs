@@ -70,7 +70,8 @@ namespace BiliCLOnline.Controllers
             var ReplyList = _lotteryResult.GetList(
                             id, Count, UnlimitedStart, UnlimitedEnd,
                             Start, End, GETStart, LETEnd, DuplicatedUID,
-                            OnlySpecified, ContentSpecified
+                            OnlySpecified, ContentSpecified,
+                            out string ResultTip
                             );
             if (!ReplyList.Any())
             {
@@ -79,7 +80,7 @@ namespace BiliCLOnline.Controllers
                     Code = 1,
                     Count = 0,
                     Data = null,
-                    Message = "预定中奖评论数大于筛选后的评论数，请重新选择"
+                    Message = ResultTip
                 };
             }
             else
@@ -89,7 +90,7 @@ namespace BiliCLOnline.Controllers
                     Code = 0,
                     Count = ReplyList.Count(),
                     Data = ReplyList,
-                    Message = ""
+                    Message = ResultTip
                 };
             }
         }
