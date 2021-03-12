@@ -294,7 +294,7 @@ namespace BiliCLOnline.Utils
                     return $"did|{RawId}";
                 }
                 // 其他作品
-                else
+                else if (RawId.Length >= 2)
                 {
                     var Prefix = RawId[..2].ToLower();
                     var Body = RawId[2..];
