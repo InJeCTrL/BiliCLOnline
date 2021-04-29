@@ -56,53 +56,56 @@ namespace BiliCLOnline.Services
                                     break;
                                 }
                             }
-                            var replies = JsonSerializer.Deserialize<IList>(data["replies"].ToString());
-                            foreach (var o_reply in replies)
+                            if (data["replies"] != null)
                             {
-                                var reply = JsonSerializer.Deserialize<Dictionary<string, object>>(o_reply.ToString());
-                                var rpid = reply["rpid_str"].ToString();
-                                var PubTime = new DateTime(1970, 1, 1, 8, 0, 0, DateTimeKind.Utc).AddSeconds(long.Parse(reply["ctime"].ToString()));
-                                // 判断开始时间
-                                if (!UnlimitedStart && Start >= PubTime &&
-                                    ((GETStart && Start != PubTime) || !GETStart))
+                                var replies = JsonSerializer.Deserialize<IList>(data["replies"].ToString());
+                                foreach (var o_reply in replies)
                                 {
-                                    continue;
+                                    var reply = JsonSerializer.Deserialize<Dictionary<string, object>>(o_reply.ToString());
+                                    var rpid = reply["rpid_str"].ToString();
+                                    var PubTime = new DateTime(1970, 1, 1, 8, 0, 0, DateTimeKind.Utc).AddSeconds(long.Parse(reply["ctime"].ToString()));
+                                    // 判断开始时间
+                                    if (!UnlimitedStart && Start >= PubTime &&
+                                        ((GETStart && Start != PubTime) || !GETStart))
+                                    {
+                                        continue;
+                                    }
+                                    // 判断结束时间
+                                    if (!UnlimitedEnd && End <= PubTime &&
+                                        ((LETEnd && End != PubTime) || !LETEnd))
+                                    {
+                                        continue;
+                                    }
+                                    var member = JsonSerializer.Deserialize<Dictionary<string, object>>(reply["member"].ToString());
+                                    var UName = member["uname"].ToString();
+                                    var Avatar = member["avatar"].ToString();
+                                    var UID = member["mid"].ToString();
+                                    // 判断重复UID
+                                    if (!DuplicatedUID && !UIDs.Add(UID))
+                                    {
+                                        continue;
+                                    }
+                                    var contents = JsonSerializer.Deserialize<Dictionary<string, object>>(reply["content"].ToString());
+                                    var Content = contents["message"].ToString();
+                                    // 判断回复内容
+                                    if (OnlySpecified && !Content.Contains(ContentSpecified))
+                                    {
+                                        continue;
+                                    }
+                                    var ReplyToSave = new Reply
+                                    {
+                                        Id = rpid,
+                                        URL = ReplyURL + rpid,
+                                        LikeCount = int.Parse(reply["like"].ToString()),
+                                        UID = UID,
+                                        Content = Content,
+                                        PubTime = PubTime,
+                                        UName = member["uname"].ToString(),
+                                        UserHomeURL = $"https://space.bilibili.com/{UID}",
+                                        FaceURL = Avatar
+                                    };
+                                    TotalList.Add(ReplyToSave);
                                 }
-                                // 判断结束时间
-                                if (!UnlimitedEnd && End <= PubTime &&
-                                    ((LETEnd && End != PubTime) || !LETEnd))
-                                {
-                                    continue;
-                                }
-                                var member = JsonSerializer.Deserialize<Dictionary<string, object>>(reply["member"].ToString());
-                                var UName = member["uname"].ToString();
-                                var Avatar = member["avatar"].ToString();
-                                var UID = member["mid"].ToString();
-                                // 判断重复UID
-                                if (!DuplicatedUID && !UIDs.Add(UID))
-                                {
-                                    continue;
-                                }
-                                var contents = JsonSerializer.Deserialize<Dictionary<string, object>>(reply["content"].ToString());
-                                var Content = contents["message"].ToString();
-                                // 判断回复内容
-                                if (OnlySpecified && !Content.Contains(ContentSpecified))
-                                {
-                                    continue;
-                                }
-                                var ReplyToSave = new Reply
-                                {
-                                    Id = rpid,
-                                    URL = ReplyURL + rpid,
-                                    LikeCount = int.Parse(reply["like"].ToString()),
-                                    UID = UID,
-                                    Content = Content,
-                                    PubTime = PubTime,
-                                    UName = member["uname"].ToString(),
-                                    UserHomeURL = $"https://space.bilibili.com/{UID}",
-                                    FaceURL = Avatar
-                                };
-                                TotalList.Add(ReplyToSave);
                             }
                             // 最后一页
                             if (i == PageCount)
