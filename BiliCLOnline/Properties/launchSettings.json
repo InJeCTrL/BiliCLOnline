@@ -26,6 +26,16 @@
       },
       "dotnetRunMessages": "true",
       "applicationUrl": "http://localhost:5000"
+    },
+    "Docker": {
+      "commandName": "Docker",
+      "launchBrowser": true,
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/swagger",
+      "environmentVariables": {
+        "corsTarget": "https://injectrl.github.io"
+      },
+      "publishAllPorts": true,
+      "useSSL": true
     }
   }
 }

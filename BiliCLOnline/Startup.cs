@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using System;
 
 namespace BiliCLOnline
 {
@@ -21,6 +22,7 @@ namespace BiliCLOnline
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var CorsTarget = Environment.GetEnvironmentVariable("corsTarget");
             services.AddScoped<IBearerInfo, BearerInfo>();
             services.AddScoped<ILotteryResult, LotteryResult>();
             services.AddSwaggerGen(c =>
@@ -36,7 +38,7 @@ namespace BiliCLOnline
             {
                 options.AddPolicy("cors", p => 
                 { 
-                    p.WithOrigins("https://injectrl.github.io")
+                    p.WithOrigins(CorsTarget)
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials();
