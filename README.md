@@ -81,6 +81,12 @@
 - 后端WebAPI: DotNet 5.0
 - 前端UI: LayUI 2.5.7
 
+## 后端部署
+
+```shell
+docker run -d -it --name {name} -p IP:Port:5000 -e corsTarget={Front-end Domain} injectrl/biliclonline:x.x.x
+```
+
 ## 目前服务器端
 
 由nginx作为代理转发https请求至运行后端WebAPI-Server的Docker容器
