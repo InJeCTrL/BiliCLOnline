@@ -405,12 +405,14 @@
 							return;
 						}
 					}
+					$('#lottery').addClass("layui-btn-disabled").attr("disabled", true);
 					$.ajax({
 						url: "https://biliclonline.injectrl.xyz/api/Lottery/" + Id,
 						type: "get",
 						data: datasend,
 						crossDomain: true,
 						success: function(data){
+							$('#lottery').removeClass("layui-btn-disabled").attr("disabled", false);
 							if (data["code"] != 0){
 								layer.msg(data["message"]);
 							}
@@ -446,6 +448,7 @@
 							}
 						},
 						error: function(j, e){
+							$('#lottery').removeClass("layui-btn-disabled").attr("disabled", false);
 							if (j.status == 400){
 								layer.msg("参数错误");
 							}
