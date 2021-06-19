@@ -119,7 +119,7 @@ namespace BiliCLOnline.Services
                         var pageFirstPage = JsonSerializer.Deserialize<Dictionary<string, int>>(dataFirstPage["page"].ToString());
                         ReplyCount = pageFirstPage["count"];
                         PageCount = (int)Math.Ceiling(ReplyCount / 49.0);
-                        if (PageCount > 510)
+                        if (PageCount > 650)
                         {
                             ResultTip = "抽奖目标的评论页数过多，拒绝抽奖";
                         }
