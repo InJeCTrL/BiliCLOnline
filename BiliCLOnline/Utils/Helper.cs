@@ -154,7 +154,7 @@ namespace BiliCLOnline.Utils
                 else if (head == "cv")
                 {
                     WorkType = 12;
-                    return $"http://api.bilibili.com/x/v2/reply?oid={OID}&type={WorkType}&sort=0&ps=49&pn=";
+                    return $"http://api.bilibili.com/x/v2/reply?oid={OID}&type={WorkType}&sort=1&ps=49&pn=";
                 }
                 else if (head == "did")
                 {
@@ -190,7 +190,7 @@ namespace BiliCLOnline.Utils
                         {
                             OID = data["aid"].ToString();
                         }
-                        return $"http://api.bilibili.com/x/v2/reply?oid={OID}&type={WorkType}&sort=0&ps=49&pn=";
+                        return $"http://api.bilibili.com/x/v2/reply?oid={OID}&type={WorkType}&sort=1&ps=49&pn=";
                     }
                 }
             }
