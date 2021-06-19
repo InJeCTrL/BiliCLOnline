@@ -42,6 +42,16 @@ namespace BiliCLOnline.Controllers
                     Message = "期望中奖评论数需大于0"
                 };
             }
+            else if (Count > 20)
+            {
+                return new ResultWrapper
+                {
+                    Code = 1,
+                    Count = 0,
+                    Data = null,
+                    Message = "期望中奖评论数需小等于20"
+                };
+            }
             // 判断评论承载者标准标识符是否合法
             var IsFormalId = await Helper.CheckIdHead(id);
             if (!IsFormalId)
