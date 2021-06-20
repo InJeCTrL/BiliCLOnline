@@ -103,14 +103,12 @@ namespace BiliCLOnline.Services
                 var ReplyURL = Helper.GetReplyURL(id);
                 if (ReplyURL != string.Empty)
                 {
-                    // 评论页数
-                    int PageCount = int.MaxValue;
                     // 评论总条数
                     int ReplyCount = int.MaxValue;
                     ResultTip = "";
                     // 评论页数是否有效
                     bool ValidPageCount = false;
-                    #region 获取评论总页数
+                    #region 获取评论总条数
                     var contentFirstPage = WebHelper.GetResponse($"{ ReplyAPIURL }1", "{\"code\":0,");
                     if (contentFirstPage != string.Empty)
                     {
@@ -118,15 +116,7 @@ namespace BiliCLOnline.Services
                         var dataFirstPage = JsonSerializer.Deserialize<Dictionary<string, object>>(topFirstPage["data"].ToString());
                         var pageFirstPage = JsonSerializer.Deserialize<Dictionary<string, int>>(dataFirstPage["page"].ToString());
                         ReplyCount = pageFirstPage["count"];
-                        PageCount = (int)Math.Ceiling(ReplyCount / 49.0);
-                        if (PageCount > 650)
-                        {
-                            ResultTip = "抽奖目标的评论页数过多，拒绝抽奖";
-                        }
-                        else
-                        {
-                            ValidPageCount = true;
-                        }
+                        ValidPageCount = true;
                     }
                     else
                     {
@@ -135,6 +125,8 @@ namespace BiliCLOnline.Services
                     #endregion
                     if (ValidPageCount)
                     {
+                        // 访问B站接口最大次数
+                        var validRequestCount = 200;
                         var From = Enumerable.Range(0, ReplyCount).ToList();
                         var FromLen = ReplyCount;
                         bool err = false;
@@ -174,6 +166,13 @@ namespace BiliCLOnline.Services
                                     {
                                         nPage = tmpPage + 1;
                                         var content = WebHelper.GetResponse($"{ReplyAPIURL}{nPage}", "{\"code\":0,");
+                                        --validRequestCount;
+                                        if (validRequestCount <= 0)
+                                        {
+                                            ResultTip = "本次抽奖对B站接口请求次数达到上限，请稍后再试";
+                                            err = true;
+                                            break;
+                                        }
                                         if (content != string.Empty)
                                         {
                                             var top = JsonSerializer.Deserialize<Dictionary<string, object>>(content);
@@ -230,6 +229,10 @@ namespace BiliCLOnline.Services
                                         break;
                                     }
                                 } while (FromLen >= 0 && FromIdxInPageLen >= 0);
+                                if (err)
+                                {
+                                    break;
+                                }
                             }
                         }
                         if (FromLen < Count)
