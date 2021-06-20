@@ -251,19 +251,20 @@ namespace BiliCLOnline.Utils
         /// <summary>
         /// 获取随机抽选结果列表
         /// </summary>
-        /// <param name="To">结果列表</param>
-        /// <param name="From">原始列表</param>
+        /// <param name="Source">原始列表</param>
         /// <param name="Count">抽选个数</param>
-        public static void GetRandomResultList(List<Reply> To, List<Reply> From, int Count)
+        public static List<int> GetRandomIdxList(List<int> Source, int Count)
         {
-            Random random = new Random();
-            int FromLen = From.Count;
-            for (int i = FromLen; i > FromLen - Count; --i)
+            var random = new Random(Guid.NewGuid().GetHashCode());
+            int sourceLen = Source.Count;
+            var result = new List<int>();
+            for (int i = sourceLen; i > sourceLen - Count; --i)
             {
                 int pRandom = random.Next(0, i);
-                To.Add(From.ElementAt(pRandom));
-                From[pRandom] = From[i - 1];
+                result.Add(Source.ElementAt(pRandom));
+                Source[pRandom] = Source[i - 1];
             }
+            return result;
         }
         /// <summary>
         /// 获取B站分享短链接指向的目标URL

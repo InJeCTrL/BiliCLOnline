@@ -136,22 +136,17 @@ namespace BiliCLOnline.Services
                     if (ValidPageCount)
                     {
                         var From = Enumerable.Range(0, ReplyCount).ToList();
-                        Random random = new Random();
-                        int FromLen = ReplyCount;
+                        var FromLen = ReplyCount;
                         bool err = false;
                         var selectedReplyList = new List<Reply>();
                         var visitedIdx = new HashSet<int>();
                         var selectedReplyUID = new HashSet<string>();
                         while (!err && Count > 0 && FromLen >= Count)
                         {
-                            var selectedIdxList = new List<int>();
-                            for (int i = FromLen; i > FromLen - Count; --i)
+                            var selectedIdxList = Helper.GetRandomIdxList(From, Count);
+                            foreach (var sidx in selectedIdxList)
                             {
-                                int pRandom = random.Next(0, i);
-                                int idxSelected = From.ElementAt(pRandom);
-                                selectedIdxList.Add(idxSelected);
-                                visitedIdx.Add(idxSelected);
-                                From[pRandom] = From[i - 1];
+                                visitedIdx.Add(sidx);
                             }
                             FromLen -= Count;
                             selectedIdxList.Sort();
@@ -161,6 +156,7 @@ namespace BiliCLOnline.Services
                             {
                                 var tmpPage = idx / 49;
                                 var tmpIdxInPage = idx % 49;
+                                // 页内可用评论下标列表
                                 var FromIdxInPage = new List<int>();
                                 for (int i = 0; i < 49; ++i)
                                 {
@@ -219,9 +215,7 @@ namespace BiliCLOnline.Services
                                     }
                                     if (FromLen > 0 && FromIdxInPageLen > 0)
                                     {
-                                        var idxFromInPage = random.Next(0, FromIdxInPageLen);
-                                        tmpIdxInPage = FromIdxInPage[idxFromInPage];
-                                        FromIdxInPage[idxFromInPage] = FromIdxInPage[FromIdxInPageLen - 1];
+                                        tmpIdxInPage = Helper.GetRandomIdxList(FromIdxInPage, 1)[0];
                                         --FromIdxInPageLen;
                                         var idxFrom = From.FindIndex(p => p == (tmpIdxInPage + tmpPage * 49));
                                         if (idxFrom != -1)
