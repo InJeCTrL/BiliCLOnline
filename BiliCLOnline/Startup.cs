@@ -29,7 +29,6 @@ namespace BiliCLOnline
             services.Configure<IpRateLimitOptions>(Configuration.GetSection("IpRateLimiting"));
             services.AddInMemoryRateLimiting();
             services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
-            
             services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
             #endregion
 
