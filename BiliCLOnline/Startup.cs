@@ -1,3 +1,4 @@
+using AspNetCoreRateLimit;
 using BiliCLOnline.IServices;
 using BiliCLOnline.Services;
 using Microsoft.AspNetCore.Builder;
@@ -22,6 +23,16 @@ namespace BiliCLOnline
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            #region œﬁ¡˜≈‰÷√
+            services.AddOptions();
+            services.AddMemoryCache();
+            services.Configure<IpRateLimitOptions>(Configuration.GetSection("IpRateLimiting"));
+            services.AddInMemoryRateLimiting();
+            services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
+            
+            services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+            #endregion
+
             var CorsTarget = Environment.GetEnvironmentVariable("corsTarget");
             services.AddScoped<IBearerInfo, BearerInfo>();
             services.AddScoped<ILotteryResult, LotteryResult>();
@@ -50,6 +61,7 @@ namespace BiliCLOnline
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+
             app.UseConcurrencyLimiter();
             if (env.IsDevelopment())
             {
@@ -61,6 +73,8 @@ namespace BiliCLOnline
                 });
             }
             app.UseCors("cors");
+
+            app.UseMiddleware<CustomIpRateLimitMiddleware>();
 
             app.UseRouting();
 
