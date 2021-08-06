@@ -125,123 +125,223 @@ namespace BiliCLOnline.Services
                     #endregion
                     if (ValidPageCount)
                     {
-                        // 访问B站接口最大次数
-                        var validRequestCount = 200;
-                        var From = Enumerable.Range(0, ReplyCount).ToList();
-                        var FromLen = ReplyCount;
-                        bool err = false;
-                        var selectedReplyList = new List<Reply>();
-                        var visitedIdx = new HashSet<int>();
-                        var selectedReplyUID = new HashSet<string>();
-                        while (!err && Count > 0 && FromLen >= Count)
+                        if (ReplyCount > 500)
                         {
-                            var selectedIdxList = Helper.GetRandomIdxList(From, Count);
-                            foreach (var sidx in selectedIdxList)
+                            #region 评论总数多，非全量抽奖
+                            // 访问B站接口最大次数
+                            var validRequestCount = 200;
+                            var From = Enumerable.Range(0, ReplyCount).ToList();
+                            var FromLen = ReplyCount;
+                            bool err = false;
+                            var selectedReplyList = new List<Reply>();
+                            var visitedIdx = new HashSet<int>();
+                            var selectedReplyUID = new HashSet<string>();
+                            while (!err && Count > 0 && FromLen >= Count)
                             {
-                                visitedIdx.Add(sidx);
-                            }
-                            FromLen -= Count;
-                            selectedIdxList.Sort();
-                            int nPage = -1;
-                            IList replies = new List<object>();
-                            foreach (var idx in selectedIdxList)
-                            {
-                                var tmpPage = idx / 49;
-                                var tmpIdxInPage = idx % 49;
-                                // 页内可用评论下标列表
-                                var FromIdxInPage = new List<int>();
-                                for (int i = 0; i < 49; ++i)
+                                var selectedIdxList = Helper.GetRandomIdxList(From, Count);
+                                foreach (var sidx in selectedIdxList)
                                 {
-                                    var idxTotal = i + tmpPage * 49;
-                                    if (!visitedIdx.Contains(idxTotal) && idxTotal < ReplyCount)
-                                    {
-                                        FromIdxInPage.Add(i);
-                                    }
+                                    visitedIdx.Add(sidx);
                                 }
-                                int FromIdxInPageLen = FromIdxInPage.Count;
-                                do
+                                FromLen -= Count;
+                                selectedIdxList.Sort();
+                                int nPage = -1;
+                                IList replies = new List<object>();
+                                foreach (var idx in selectedIdxList)
                                 {
-                                    // 与上一序号不同页
-                                    if (tmpPage + 1 != nPage)
+                                    var tmpPage = idx / 49;
+                                    var tmpIdxInPage = idx % 49;
+                                    // 页内可用评论下标列表
+                                    var FromIdxInPage = new List<int>();
+                                    for (int i = 0; i < 49; ++i)
                                     {
-                                        nPage = tmpPage + 1;
-                                        var content = WebHelper.GetResponse($"{ReplyAPIURL}{nPage}", "{\"code\":0,");
-                                        --validRequestCount;
-                                        if (validRequestCount <= 0)
+                                        var idxTotal = i + tmpPage * 49;
+                                        if (!visitedIdx.Contains(idxTotal) && idxTotal < ReplyCount)
                                         {
-                                            ResultTip = "本次抽奖对B站接口请求次数达到上限，请稍后再试";
-                                            err = true;
-                                            break;
+                                            FromIdxInPage.Add(i);
                                         }
-                                        if (content != string.Empty)
+                                    }
+                                    int FromIdxInPageLen = FromIdxInPage.Count;
+                                    do
+                                    {
+                                        // 与上一序号不同页
+                                        if (tmpPage + 1 != nPage)
                                         {
-                                            var top = JsonSerializer.Deserialize<Dictionary<string, object>>(content);
-                                            var data = JsonSerializer.Deserialize<Dictionary<string, object>>(top["data"].ToString());
-                                            var page = JsonSerializer.Deserialize<Dictionary<string, int>>(data["page"].ToString());
-                                            if (data["replies"] != null)
+                                            nPage = tmpPage + 1;
+                                            var content = WebHelper.GetResponse($"{ReplyAPIURL}{nPage}", "{\"code\":0,");
+                                            --validRequestCount;
+                                            if (validRequestCount <= 0)
                                             {
-                                                replies = JsonSerializer.Deserialize<IList>(data["replies"].ToString());
+                                                ResultTip = "本次抽奖对B站接口请求次数达到上限，请稍后再试";
+                                                err = true;
+                                                break;
+                                            }
+                                            if (content != string.Empty)
+                                            {
+                                                var top = JsonSerializer.Deserialize<Dictionary<string, object>>(content);
+                                                var data = JsonSerializer.Deserialize<Dictionary<string, object>>(top["data"].ToString());
+                                                var page = JsonSerializer.Deserialize<Dictionary<string, int>>(data["page"].ToString());
+                                                if (data["replies"] != null)
+                                                {
+                                                    replies = JsonSerializer.Deserialize<IList>(data["replies"].ToString());
+                                                }
+                                                else
+                                                {
+                                                    replies = new List<object>();
+                                                }
                                             }
                                             else
                                             {
-                                                replies = new List<object>();
+                                                ResultTip = "触发B站风控机制，网络异常，请稍后再试";
+                                                err = true;
+                                                break;
+                                            }
+                                        }
+                                        var replyCountInPage = replies.Count;
+                                        if (tmpIdxInPage < replyCountInPage)
+                                        {
+                                            var o_reply = replies[tmpIdxInPage];
+                                            var ReplyToSave = ParseReplyItem(o_reply.ToString(), ReplyURL);
+                                            if (Match(
+                                                ReplyToSave, UnlimitedStart, UnlimitedEnd,
+                                                Start, End, GETStart, LETEnd,
+                                                DuplicatedUID, selectedReplyUID,
+                                                OnlySpecified, ContentSpecified
+                                                ))
+                                            {
+                                                selectedReplyUID.Add(ReplyToSave.UID);
+                                                selectedReplyList.Add(ReplyToSave);
+                                                --Count;
+                                                break;
+                                            }
+                                        }
+                                        if (FromLen > 0 && FromIdxInPageLen > 0)
+                                        {
+                                            tmpIdxInPage = Helper.GetRandomIdxList(FromIdxInPage, 1)[0];
+                                            --FromIdxInPageLen;
+                                            var idxFrom = From.FindIndex(p => p == (tmpIdxInPage + tmpPage * 49));
+                                            if (idxFrom != -1)
+                                            {
+                                                visitedIdx.Add(tmpIdxInPage + tmpPage * 49);
+                                                From[idxFrom] = From[FromLen - 1];
+                                                --FromLen;
                                             }
                                         }
                                         else
                                         {
-                                            ResultTip = "触发B站风控机制，网络异常，请稍后再试";
-                                            err = true;
                                             break;
                                         }
-                                    }
-                                    var replyCountInPage = replies.Count;
-                                    if (tmpIdxInPage < replyCountInPage)
-                                    {
-                                        var o_reply = replies[tmpIdxInPage];
-                                        var ReplyToSave = ParseReplyItem(o_reply.ToString(), ReplyURL);
-                                        if (Match(
-                                            ReplyToSave, UnlimitedStart, UnlimitedEnd,
-                                            Start, End, GETStart, LETEnd,
-                                            DuplicatedUID, selectedReplyUID,
-                                            OnlySpecified, ContentSpecified
-                                            ))
-                                        {
-                                            selectedReplyUID.Add(ReplyToSave.UID);
-                                            selectedReplyList.Add(ReplyToSave);
-                                            --Count;
-                                            break;
-                                        }
-                                    }
-                                    if (FromLen > 0 && FromIdxInPageLen > 0)
-                                    {
-                                        tmpIdxInPage = Helper.GetRandomIdxList(FromIdxInPage, 1)[0];
-                                        --FromIdxInPageLen;
-                                        var idxFrom = From.FindIndex(p => p == (tmpIdxInPage + tmpPage * 49));
-                                        if (idxFrom != -1)
-                                        {
-                                            visitedIdx.Add(tmpIdxInPage + tmpPage * 49);
-                                            From[idxFrom] = From[FromLen - 1];
-                                            --FromLen;
-                                        }
-                                    }
-                                    else
+                                    } while (FromLen >= 0 && FromIdxInPageLen >= 0);
+                                    if (err)
                                     {
                                         break;
                                     }
-                                } while (FromLen >= 0 && FromIdxInPageLen >= 0);
-                                if (err)
+                                }
+                            }
+                            if (FromLen < Count)
+                            {
+                                ResultTip = "预定中奖评论数大于筛选后的评论数，请重新选择";
+                            }
+                            else if (!err)
+                            {
+                                Result = selectedReplyList;
+                            }
+                            #endregion
+                        }
+                        else
+                        {
+                            #region 评论总数少，全量抽奖
+                            var UIDs = new HashSet<string>();
+                            var TotalList = new List<Reply>();
+                            // 评论页数
+                            int PageCount = (int)Math.Ceiling(ReplyCount / 49.0);
+                            ResultTip = "";
+                            for (int i = 1; i <= PageCount; ++i)
+                            {
+                                var content = WebHelper.GetResponse(ReplyAPIURL + i.ToString(), "{\"code\":0,");
+                                if (content != string.Empty)
                                 {
+                                    var top = JsonSerializer.Deserialize<Dictionary<string, object>>(content);
+                                    var data = JsonSerializer.Deserialize<Dictionary<string, object>>(top["data"].ToString());
+                                    var page = JsonSerializer.Deserialize<Dictionary<string, int>>(data["page"].ToString());
+                                    if (data["replies"] != null)
+                                    {
+                                        var replies = JsonSerializer.Deserialize<IList>(data["replies"].ToString());
+                                        foreach (var o_reply in replies)
+                                        {
+                                            var reply = JsonSerializer.Deserialize<Dictionary<string, object>>(o_reply.ToString());
+                                            var rpid = reply["rpid_str"].ToString();
+                                            var PubTime = new DateTime(1970, 1, 1, 8, 0, 0, DateTimeKind.Utc).AddSeconds(long.Parse(reply["ctime"].ToString()));
+                                            // 判断开始时间
+                                            if (!UnlimitedStart && Start >= PubTime &&
+                                                ((GETStart && Start != PubTime) || !GETStart))
+                                            {
+                                                continue;
+                                            }
+                                            // 判断结束时间
+                                            if (!UnlimitedEnd && End <= PubTime &&
+                                                ((LETEnd && End != PubTime) || !LETEnd))
+                                            {
+                                                continue;
+                                            }
+                                            var member = JsonSerializer.Deserialize<Dictionary<string, object>>(reply["member"].ToString());
+                                            var UName = member["uname"].ToString();
+                                            var Avatar = member["avatar"].ToString();
+                                            var UID = member["mid"].ToString();
+                                            // 判断重复UID
+                                            if (!DuplicatedUID && !UIDs.Add(UID))
+                                            {
+                                                continue;
+                                            }
+                                            var contents = JsonSerializer.Deserialize<Dictionary<string, object>>(reply["content"].ToString());
+                                            var Content = contents["message"].ToString();
+                                            // 判断回复内容
+                                            if (OnlySpecified && !Content.Contains(ContentSpecified))
+                                            {
+                                                continue;
+                                            }
+                                            var ReplyToSave = new Reply
+                                            {
+                                                Id = rpid,
+                                                URL = ReplyURL + rpid,
+                                                LikeCount = int.Parse(reply["like"].ToString()),
+                                                UID = UID,
+                                                Content = Content,
+                                                PubTime = PubTime,
+                                                UName = member["uname"].ToString(),
+                                                UserHomeURL = $"https://space.bilibili.com/{UID}",
+                                                FaceURL = Avatar
+                                            };
+                                            TotalList.Add(ReplyToSave);
+                                        }
+                                    }
+                                    // 最后一页
+                                    if (i == PageCount)
+                                    {
+                                        var TotalListCount = TotalList.Count;
+                                        // 经过条件筛选后的评论数大等于预期得奖数
+                                        if (TotalListCount >= Count)
+                                        {
+                                            var From = Enumerable.Range(0, TotalListCount).ToList();
+                                            var Dest = Helper.GetRandomIdxList(From, Count);
+                                            foreach (var idx in Dest)
+                                            {
+                                                Result.Add(TotalList[idx]);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            ResultTip = "预定中奖评论数大于筛选后的评论数，请重新选择";
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    ResultTip = "触发B站风控机制，网络异常，请稍后再试";
                                     break;
                                 }
                             }
-                        }
-                        if (FromLen < Count)
-                        {
-                            ResultTip = "预定中奖评论数大于筛选后的评论数，请重新选择";
-                        }
-                        else if (!err)
-                        {
-                            Result = selectedReplyList;
+                            #endregion
                         }
                     }
                 }
