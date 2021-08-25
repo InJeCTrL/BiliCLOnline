@@ -432,7 +432,8 @@
 											width: 100, align:'center', title: '操作', toolbar: '#tools'
 										}
 									]],
-									data: data["data"]
+									data: data["data"],
+									limit: data["count"]
 								});
 								table.on('tool(luckylist)', function(obj){
 									switch (obj.event){
