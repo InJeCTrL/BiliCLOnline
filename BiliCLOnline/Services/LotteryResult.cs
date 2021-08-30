@@ -19,8 +19,6 @@ namespace BiliCLOnline.Services
         /// <param name="UnlimitedEnd"></param>
         /// <param name="Start"></param>
         /// <param name="End"></param>
-        /// <param name="GETStart"></param>
-        /// <param name="LETEnd"></param>
         /// <param name="DuplicatedUID"></param>
         /// <param name="selectedReplyUID"></param>
         /// <param name="OnlySpecified"></param>
@@ -28,30 +26,29 @@ namespace BiliCLOnline.Services
         /// <returns></returns>
         private bool Match(
             Reply ReplyToSave, bool UnlimitedStart, bool UnlimitedEnd,
-            DateTime Start, DateTime End, bool GETStart, bool LETEnd,
+            DateTime Start, DateTime End,
             bool DuplicatedUID, HashSet<string> selectedReplyUID,
             bool OnlySpecified, string ContentSpecified)
         {
             // 判断重复UID
-            if (DuplicatedUID || !selectedReplyUID.Contains(ReplyToSave.UID))
+            if (!DuplicatedUID && selectedReplyUID.Contains(ReplyToSave.UID))
             {
-                // 判断开始时间
-                if (!UnlimitedStart && Start >= ReplyToSave.PubTime &&
-                    ((GETStart && Start != ReplyToSave.PubTime) || !GETStart))
-                {
-                    return false;
-                }
-                // 判断结束时间
-                if (!UnlimitedEnd && End <= ReplyToSave.PubTime &&
-                    ((LETEnd && End != ReplyToSave.PubTime) || !LETEnd))
-                {
-                    return false;
-                }
-                // 判断回复内容
-                if (OnlySpecified && !ReplyToSave.Content.Contains(ContentSpecified))
-                {
-                    return false;
-                }
+                return false;
+            }
+            // 判断开始时间
+            if (!UnlimitedStart && Start >= ReplyToSave.PubTime)
+            {
+                return false;
+            }
+            // 判断结束时间
+            if (!UnlimitedEnd && End <= ReplyToSave.PubTime)
+            {
+                return false;
+            }
+            // 判断回复内容
+            if (OnlySpecified && !ReplyToSave.Content.Contains(ContentSpecified))
+            {
+                return false;
             }
             return true;
         }
@@ -93,6 +90,22 @@ namespace BiliCLOnline.Services
             out string ResultTip
             )
         {
+            if (!UnlimitedStart)
+            {
+                if (GETStart)
+                {
+                    Start = Start.AddDays(-1);
+                }
+                Start = new DateTime(Start.Year, Start.Month, Start.Day, 23, 59, 59);
+            }
+            if (!UnlimitedEnd)
+            {
+                if (LETEnd)
+                {
+                    End = End.AddDays(1);
+                }
+                End = new DateTime(End.Year, End.Month, End.Day, 0, 0, 0);
+            }
             // 抽奖结果评论
             var Result = new List<Reply>();
             // 评论区信息接口
@@ -204,7 +217,7 @@ namespace BiliCLOnline.Services
                                             var ReplyToSave = ParseReplyItem(o_reply.ToString(), ReplyURL);
                                             if (Match(
                                                 ReplyToSave, UnlimitedStart, UnlimitedEnd,
-                                                Start, End, GETStart, LETEnd,
+                                                Start, End,
                                                 DuplicatedUID, selectedReplyUID,
                                                 OnlySpecified, ContentSpecified
                                                 ))
@@ -273,14 +286,12 @@ namespace BiliCLOnline.Services
                                             var rpid = reply["rpid_str"].ToString();
                                             var PubTime = new DateTime(1970, 1, 1, 8, 0, 0, DateTimeKind.Utc).AddSeconds(long.Parse(reply["ctime"].ToString()));
                                             // 判断开始时间
-                                            if (!UnlimitedStart && Start >= PubTime &&
-                                                ((GETStart && Start != PubTime) || !GETStart))
+                                            if (!UnlimitedStart && Start >= PubTime)
                                             {
                                                 continue;
                                             }
                                             // 判断结束时间
-                                            if (!UnlimitedEnd && End <= PubTime &&
-                                                ((LETEnd && End != PubTime) || !LETEnd))
+                                            if (!UnlimitedEnd && End <= PubTime)
                                             {
                                                 continue;
                                             }
