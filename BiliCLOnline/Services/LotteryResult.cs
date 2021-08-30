@@ -90,21 +90,13 @@ namespace BiliCLOnline.Services
             out string ResultTip
             )
         {
-            if (!UnlimitedStart)
+            if (!UnlimitedStart && GETStart)
             {
-                if (GETStart)
-                {
-                    Start = Start.AddDays(-1);
-                }
-                Start = new DateTime(Start.Year, Start.Month, Start.Day, 23, 59, 59);
+                Start = Start.AddSeconds(-1);
             }
-            if (!UnlimitedEnd)
+            if (!UnlimitedEnd && LETEnd)
             {
-                if (LETEnd)
-                {
-                    End = End.AddDays(1);
-                }
-                End = new DateTime(End.Year, End.Month, End.Day, 0, 0, 0);
+                End = End.AddSeconds(1);
             }
             // 抽奖结果评论
             var Result = new List<Reply>();
