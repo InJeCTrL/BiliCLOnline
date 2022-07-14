@@ -5,7 +5,7 @@
         /// <summary>
         /// 用户ID
         /// </summary>
-        public string UID { get; set; }
+        public long UID { get; set; }
         /// <summary>
         /// 用户名
         /// </summary>

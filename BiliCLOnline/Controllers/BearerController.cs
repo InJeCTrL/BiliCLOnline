@@ -9,11 +9,13 @@ namespace BiliCLOnline.Controllers
     [ApiController]
     public class BearerController : ControllerBase
     {
-        private readonly IBearerInfo _bearerInfo;
-        public BearerController(IBearerInfo bearerInfo)
+        private readonly IBearerInfo bearerInfo;
+
+        public BearerController(IBearerInfo _bearerInfo)
         {
-            _bearerInfo = bearerInfo;
+            bearerInfo = _bearerInfo;
         }
+
         /// <summary>
         /// 获取评论承载者（媒体稿件/动态）的信息
         /// </summary>
@@ -22,27 +24,29 @@ namespace BiliCLOnline.Controllers
         [HttpGet]
         public async Task<ActionResult<ResultWrapper>> GetBearer(string pattern)
         {
-            var wrapper = await _bearerInfo.Get(pattern);
-            if (wrapper.Type == BearerType.Error)
+            if (!string.IsNullOrEmpty(pattern))
             {
-                return new ResultWrapper
+                var wrapper = await bearerInfo.Get(pattern);
+
+                if (wrapper.Type != BearerType.Error)
                 {
-                    Code = 1,
-                    Count = 0,
-                    Data = null,
-                    Message = "ID或URL无效"
-                };
+                    return new ResultWrapper
+                    {
+                        Code = 0,
+                        Count = 1,
+                        Data = wrapper,
+                        Message = ""
+                    };
+                }
             }
-            else
+
+            return new ResultWrapper
             {
-                return new ResultWrapper
-                {
-                    Code = 0,
-                    Count = 1,
-                    Data = wrapper,
-                    Message = ""
-                };
-            }
+                Code = 1,
+                Count = 0,
+                Data = null,
+                Message = "ID或URL无效"
+            };
         }
     }
 }

@@ -11,11 +11,10 @@ namespace BiliCLOnline.IServices
         /// 获取抽奖结果评论列表
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<Reply> GetList(
-            string id, int Count, bool UnlimitedStart, bool UnlimitedEnd,
-            DateTime Start, DateTime End, bool GETStart, bool LETEnd,
-            bool DuplicatedUID, bool OnlySpecified, string ContentSpecified,
-            out string ResultTip
+        public Task<Tuple<string, List<Reply>>> GetList(
+            string id, int count, bool unlimitedStart, bool unlimitedEnd,
+            DateTime start, DateTime end, bool GEStart, bool LEEnd,
+            bool duplicatedUID, bool onlySpecified, string contentSpecified
             );
     }
 }

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 	<head>
 		<title>BiliCLOnline</title>
@@ -301,6 +301,7 @@
 					}
 				});
 				$("#set").click(function(){
+					$("#set").disable();
 					$.ajax({
 						url: "https://biliclonline.injectrl.xyz/api/Bearer",
 						type: "get",
@@ -358,6 +359,7 @@
 										break;
 								}
 							}
+							$("#set").enable();
 						},
 						error: function(e){
 							layer.msg("服务暂不可用");
@@ -405,7 +407,8 @@
 							return;
 						}
 					}
-					$('#lottery').addClass("layui-btn-disabled").attr("disabled", true);
+					$("#lottery").disable();
+					layer.msg("抽奖请求已发出，请等待");
 					$.ajax({
 						url: "https://biliclonline.injectrl.xyz/api/Lottery/" + Id,
 						type: "get",
@@ -447,6 +450,7 @@
 								layer.msg("已获取幸运列表");
 								element.tabChange('tabs', 'third');
 							}
+							$("#lottery").enable();
 						},
 						error: function(j, e){
 							$('#lottery').removeClass("layui-btn-disabled").attr("disabled", false);
@@ -459,7 +463,6 @@
 							console.log(e);
 						},
 					});
-					layer.msg("抽奖请求已发出，请等待");
 				});
 			});
 		</script>

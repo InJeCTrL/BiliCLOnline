@@ -1,114 +1,187 @@
 ﻿using BiliCLOnline.IServices;
 using BiliCLOnline.Models;
 using BiliCLOnline.Utils;
+using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace BiliCLOnline.Services
 {
     public class BearerInfo : IBearerInfo
     {
-        public Task<BearerWrapper> Get(string pattern)
+        private readonly ILogger logger;
+
+        private readonly Helper helper;
+        
+        public BearerInfo(Helper _helper, ILogger<BearerInfo> _logger)
         {
-            // 获取评论承载者标识符
-            var Id = Helper.GetFormalIdFromPattern(pattern);
-            // 评论承载者标识符格式化正确并且通过验证
-            if (Id != string.Empty && Helper.IsValidId(Id))
+            logger = _logger;
+            helper = _helper;
+        }
+
+        public async Task<BearerWrapper> Get(string pattern)
+        {
+            var formalId = await helper.GetFormalIdFromPattern(pattern);
+
+            #region 验证formalId有效并且符合语法
+            if (string.IsNullOrEmpty(formalId) || !helper.CheckIdSyntax(formalId))
             {
-                // 获取评论承载者详细信息接口URL
-                var DetailAPIURL = Helper.GetBearerDetailAPIURL(Id);
-                if (DetailAPIURL != string.Empty)
+                logger.LogWarning(message: "Wrong formalId",
+                                args: new object[] { formalId, pattern });
+
+                return new BearerWrapper
                 {
-                    // 针对每种评论承载者做对应处理
-                    var Content = WebHelper.GetResponse(DetailAPIURL, "{\"code\":0,");
-                    if (Content != string.Empty)
-                    {
-                        var top = JsonSerializer.Deserialize<Dictionary<string, object>>(Content);
-                        var data = JsonSerializer.Deserialize<Dictionary<string, object>>(top["data"].ToString());
-                        switch (Helper.GetBearerTypeById(Id))
-                        {
-                            case BearerType.Video:
-                                var view = JsonSerializer.Deserialize<Dictionary<string, object>>(data["View"].ToString());
-                                var BVID = view["bvid"].ToString();
-                                var owner = JsonSerializer.Deserialize<Dictionary<string, object>>(view["owner"].ToString());
-                                var stat = JsonSerializer.Deserialize<Dictionary<string, object>>(view["stat"].ToString());
-                                return Task.FromResult(new BearerWrapper
-                                {
-                                    Type = BearerType.Video,
-                                    Bearer = new Video
-                                    {
-                                        CommentCount = int.Parse(stat["reply"].ToString()),
-                                        FaceURL = owner["face"].ToString(),
-                                        Id = Id,
-                                        PubTime = new DateTime(1970, 1, 1, 8, 0, 0, DateTimeKind.Utc).AddSeconds(long.Parse(view["pubdate"].ToString())),
-                                        ShareCount = int.Parse(stat["share"].ToString()),
-                                        UID = owner["mid"].ToString(),
-                                        UName = owner["name"].ToString(),
-                                        UserHomeURL = $"https://space.bilibili.com/{owner["mid"]}",
-                                        URL = $"https://www.bilibili.com/video/{BVID}",
-                                        CoinCount = int.Parse(stat["coin"].ToString()),
-                                        CollectCount = int.Parse(stat["favorite"].ToString()),
-                                        LikeCount = int.Parse(stat["like"].ToString()),
-                                        Title = view["title"].ToString(),
-                                        ViewCount = int.Parse(stat["view"].ToString())
-                                    }
-                                });
-                            case BearerType.Article:
-                                var stats = JsonSerializer.Deserialize<Dictionary<string, object>>(data["stats"].ToString());
-                                return Task.FromResult(new BearerWrapper
-                                {
-                                    Type = BearerType.Article,
-                                    Bearer = new Article
-                                    {
-                                        CoinCount = int.Parse(stats["coin"].ToString()),
-                                        CollectCount = int.Parse(stats["favorite"].ToString()),
-                                        CommentCount = int.Parse(stats["reply"].ToString()),
-                                        LikeCount = int.Parse(stats["like"].ToString()),
-                                        Id = Id,
-                                        ShareCount = int.Parse(stats["share"].ToString()),
-                                        Title = data["title"].ToString(),
-                                        ViewCount = int.Parse(stats["view"].ToString()),
-                                        UID = data["mid"].ToString(),
-                                        UName = data["author_name"].ToString(),
-                                        UserHomeURL = $"https://space.bilibili.com/{data["mid"]}",
-                                        URL = $"https://www.bilibili.com/read/{Id[(Id.IndexOf("|") + 1)..]}",
-                                    }
-                                });
-                            case BearerType.Dynamic:
-                                var card = JsonSerializer.Deserialize<Dictionary<string, object>>(data["card"].ToString());
-                                var desc = JsonSerializer.Deserialize<Dictionary<string, object>>(card["desc"].ToString());
-                                var user_profile = JsonSerializer.Deserialize<Dictionary<string, object>>(desc["user_profile"].ToString());
-                                var info = JsonSerializer.Deserialize<Dictionary<string, object>>(user_profile["info"].ToString());
-                                return Task.FromResult(new BearerWrapper
-                                {
-                                    Type = BearerType.Dynamic,
-                                    Bearer = new Dynamic
-                                    {
-                                        CommentCount = int.Parse(desc["comment"].ToString()),
-                                        FaceURL = info["face"].ToString(),
-                                        PubTime = new DateTime(1970, 1, 1, 8, 0, 0, DateTimeKind.Utc).AddSeconds(long.Parse(desc["timestamp"].ToString())),
-                                        Id = Id,
-                                        LikeCount = int.Parse(desc["like"].ToString()),
-                                        ShareCount = int.Parse(desc["repost"].ToString()),
-                                        UID = desc["uid"].ToString(),
-                                        UName = info["uname"].ToString(),
-                                        UserHomeURL = $"https://space.bilibili.com/{desc["uid"]}",
-                                        URL = $"https://t.bilibili.com/{desc["dynamic_id"]}"
-                                    }
-                                });
-                            default:
-                                break;
-                        }
-                    }
-                }
+                    Type = BearerType.Error,
+                    Bearer = null
+                };
             }
-            return Task.FromResult(new BearerWrapper
+            #endregion
+
+            var workBasics = helper.GetBearerBasics(formalId);
+
+            #region 验证评论承载者类型是否合法
+            if (workBasics.Item1 == BearerType.Error)
             {
-                Type = BearerType.Error,
-                Bearer = null
-            });
+                logger.LogWarning(message: "Invalid Bearer type",
+                                args: new object[] { formalId });
+
+                return new BearerWrapper
+                {
+                    Type = BearerType.Error,
+                    Bearer = null
+                };
+            }
+            #endregion
+
+            var detailAPI = helper.GetBearerDetailAPIURL(workBasics.Item2, workBasics.Item3);
+
+            #region 验证详细信息接口是否合法
+            if (string.IsNullOrEmpty(detailAPI))
+            {
+                logger.LogWarning(message: "Invalid detailAPI",
+                                args: new object[] { formalId, detailAPI });
+
+                return new BearerWrapper
+                {
+                    Type = BearerType.Error,
+                    Bearer = null
+                };
+            }
+            #endregion
+
+            Tuple<bool, DetailData> validDetail = workBasics.Item1 switch
+            {
+                BearerType.Dynamic => await helper.IsValidWork<DynamicDetailData>(detailAPI),
+                BearerType.Article => await helper.IsValidWork<ArticleDetailData>(detailAPI),
+                BearerType.Video => await helper.IsValidWork<VideoDetailData>(detailAPI),
+                BearerType.Error => Tuple.Create(false, default(DetailData)),
+                _ => throw new NotImplementedException()
+            }; 
+
+            #region 验证是否有效作品
+            if (!validDetail.Item1)
+            {
+                logger.LogWarning(message: "Invalid work",
+                                args: new object[] { pattern });
+
+                return new BearerWrapper
+                {
+                    Type = BearerType.Error,
+                    Bearer = null
+                };
+            }
+            #endregion
+
+            #region 针对每种评论承载者做对应处理
+            switch (workBasics.Item1)
+            {
+                case BearerType.Video:
+                    var videoData = (VideoDetailData)validDetail.Item2;
+
+                    return new BearerWrapper
+                    {
+                        Type = BearerType.Video,
+                        Bearer = new Video
+                        {
+                            CommentCount = videoData.View.stat.reply,
+                            FaceURL = videoData.View.owner.face,
+                            Id = formalId,
+                            PubTime = helper.TimeTrans(videoData.View.pubdate),
+                            ShareCount = videoData.View.stat.share,
+                            UID = videoData.View.owner.mid,
+                            UName = videoData.View.owner.name,
+                            UserHomeURL = string.Format(
+                                Constants.SpaceURLTemplate, videoData.View.owner.mid
+                                ),
+                            URL = string.Format(
+                                Constants.VideoURLTemplate, videoData.View.bvid
+                                ),
+                            CoinCount = videoData.View.stat.coin,
+                            CollectCount = videoData.View.stat.favorite,
+                            LikeCount = videoData.View.stat.like,
+                            Title = videoData.View.title,
+                            ViewCount = videoData.View.stat.view
+                        }
+                    };
+                case BearerType.Article:
+                    var articleData = (ArticleDetailData)validDetail.Item2;
+
+                    return new BearerWrapper
+                    {
+                        Type = BearerType.Article,
+                        Bearer = new Article
+                        {
+                            
+                            CoinCount = articleData.stats.coin,
+                            CollectCount = articleData.stats.favorite,
+                            CommentCount = articleData.stats.reply,
+                            LikeCount = articleData.stats.like,
+                            Id = formalId,
+                            ShareCount = articleData.stats.share,
+                            Title = articleData.title,
+                            ViewCount = articleData.stats.view,
+                            UID = articleData.mid,
+                            UName = articleData.author_name,
+                            UserHomeURL = string.Format(
+                                Constants.SpaceURLTemplate, articleData.mid
+                                ),
+                            URL = string.Format(
+                                Constants.ArticleURLTemplate, workBasics.Item3
+                            )
+                        }
+                    };
+                case BearerType.Dynamic:
+                    var dynamicData = (DynamicDetailData)validDetail.Item2;
+
+                    return new BearerWrapper
+                    {
+                        Type = BearerType.Dynamic,
+                        Bearer = new Dynamic
+                        {
+                            CommentCount = dynamicData.card.desc.comment,
+                            FaceURL = dynamicData.card.desc.user_profile.info.face,
+                            PubTime = helper.TimeTrans(dynamicData.card.desc.timestamp),
+                            Id = formalId,
+                            LikeCount = dynamicData.card.desc.like,
+                            ShareCount = dynamicData.card.desc.repost,
+                            UID = dynamicData.card.desc.uid,
+                            UName = dynamicData.card.desc.user_profile.info.uname,
+                            UserHomeURL = string.Format(
+                                Constants.SpaceURLTemplate, dynamicData.card.desc.uid
+                                ),
+                            URL = string.Format(
+                                Constants.DynamicURLTemplate, dynamicData.card.desc.dynamic_id
+                            )
+                        }
+                    };
+                default:
+                    return new BearerWrapper
+                    {
+                        Type = BearerType.Error,
+                        Bearer = null
+                    };
+            }
+            #endregion
         }
     }
 }

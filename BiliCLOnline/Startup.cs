@@ -1,6 +1,7 @@
 using AspNetCoreRateLimit;
 using BiliCLOnline.IServices;
 using BiliCLOnline.Services;
+using BiliCLOnline.Utils;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -32,13 +33,18 @@ namespace BiliCLOnline
             services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
             #endregion
 
-            var CorsTarget = Environment.GetEnvironmentVariable("corsTarget");
+            var corsTarget = Environment.GetEnvironmentVariable("corsTarget");
+
+            services.AddSingleton<WebHelper>();
+            services.AddSingleton<Helper>();
             services.AddScoped<IBearerInfo, BearerInfo>();
             services.AddScoped<ILotteryResult, LotteryResult>();
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "BiliCLOnline", Version = "v1" });
             });
+
             services.AddQueuePolicy(option =>
             {
                 option.MaxConcurrentRequests = 10;
@@ -48,7 +54,7 @@ namespace BiliCLOnline
             {
                 options.AddPolicy("cors", p => 
                 { 
-                    p.WithOrigins(CorsTarget)
+                    p.WithOrigins(corsTarget)
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials();

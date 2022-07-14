@@ -11,11 +11,13 @@ namespace BiliCLOnline.Controllers
     [ApiController]
     public class LotteryController : ControllerBase
     {
-        private readonly ILotteryResult _lotteryResult;
-        public LotteryController(ILotteryResult lotteryResult)
+        private readonly ILotteryResult lotteryResult;
+
+        public LotteryController(ILotteryResult _lotteryResult)
         {
-            _lotteryResult = lotteryResult;
+            lotteryResult = _lotteryResult;
         }
+
         /// <summary>
         /// 获取评论区抽奖结果
         /// </summary>
@@ -23,16 +25,17 @@ namespace BiliCLOnline.Controllers
         /// <returns></returns>
         [HttpGet("{id}")]
         public async Task<ActionResult<ResultWrapper>> GetLotteryResult(
-            string id, int Count, bool UnlimitedStart, bool UnlimitedEnd,
-            DateTime Start, DateTime End, bool GETStart, bool LETEnd,
-            bool DuplicatedUID, bool OnlySpecified, string ContentSpecified
+            string id, int count, bool unlimitedStart, bool unlimitedEnd,
+            DateTime start, DateTime end, bool GEStart, bool LEEnd,
+            bool duplicatedUID, bool onlySpecified, string contentSpecified
             )
         {
-            if (ContentSpecified == null)
+            if (string.IsNullOrEmpty(contentSpecified))
             {
-                ContentSpecified = "";
+                contentSpecified = "";
             }
-            if (Count == 0)
+
+            if (count == 0)
             {
                 return new ResultWrapper
                 {
@@ -42,7 +45,7 @@ namespace BiliCLOnline.Controllers
                     Message = "期望中奖评论数需大于0"
                 };
             }
-            else if (Count > 50)
+            else if (count > 50)
             {
                 return new ResultWrapper
                 {
@@ -52,45 +55,24 @@ namespace BiliCLOnline.Controllers
                     Message = "期望中奖评论数需小等于50"
                 };
             }
-            // 判断评论承载者标准标识符是否合法
-            var IsFormalId = await Helper.CheckIdHead(id);
-            if (!IsFormalId)
-            {
-                return new ResultWrapper
-                {
-                    Code = 1,
-                    Count = 0,
-                    Data = null,
-                    Message = "非法的评论承载者标识符"
-                };
-            }
-            // 检查是否是有效标识符
-            var IsValidId = Helper.IsValidId(id);
-            if (!IsValidId)
-            {
-                return new ResultWrapper
-                {
-                    Code = 1,
-                    Count = 0,
-                    Data = null,
-                    Message = "无效稿件/动态"
-                };
-            }
+
             // 获取抽奖结果
-            var ReplyList = _lotteryResult.GetList(
-                            id, Count, UnlimitedStart, UnlimitedEnd,
-                            Start, End, GETStart, LETEnd, DuplicatedUID,
-                            OnlySpecified, ContentSpecified,
-                            out string ResultTip
-                            );
-            if (!ReplyList.Any())
+            var result = await lotteryResult.GetList(
+                id, count, unlimitedStart, unlimitedEnd,
+                start, end, GEStart, LEEnd, duplicatedUID,
+                onlySpecified, contentSpecified
+                );
+
+            var replyList = result.Item2;
+
+            if (!replyList.Any())
             {
                 return new ResultWrapper
                 {
                     Code = 1,
                     Count = 0,
                     Data = null,
-                    Message = ResultTip
+                    Message = result.Item1
                 };
             }
             else
@@ -98,9 +80,9 @@ namespace BiliCLOnline.Controllers
                 return new ResultWrapper
                 {
                     Code = 0,
-                    Count = ReplyList.Count(),
-                    Data = ReplyList,
-                    Message = ResultTip
+                    Count = replyList.Count,
+                    Data = replyList,
+                    Message = ""
                 };
             }
         }

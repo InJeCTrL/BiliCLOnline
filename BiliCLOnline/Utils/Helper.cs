@@ -1,9 +1,12 @@
 ﻿using BiliCLOnline.Models;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
+using static BiliCLOnline.Utils.Constants;
 
 namespace BiliCLOnline.Utils
 {
@@ -16,374 +19,320 @@ namespace BiliCLOnline.Utils
     }
     public class Helper
     {
-        /// <summary>
-        /// 根据评论承载者标识符获得评论承载者类型
-        /// </summary>
-        /// <param name="Id"></param>
-        /// <returns></returns>
-        public static BearerType GetBearerTypeById(string Id)
+        private readonly ILogger<Helper> logger;
+
+        private readonly WebHelper webHelper;
+
+        public Helper(ILogger<Helper> _logger, WebHelper _webHelper)
         {
-            var Parts = GetIdHeadBody(Id);
-            var Btype = BearerType.Error;
-            if (Parts == null)
-            {
-                return Btype;
-            }
-            switch (Parts[0])
-            {
-                case "aid":
-                case "bvid":
-                    Btype = BearerType.Video;
-                    break;
-                case "cv":
-                    Btype = BearerType.Article;
-                    break;
-                case "did":
-                    Btype = BearerType.Dynamic;
-                    break;
-                default:
-                    break;
-            }
-            return Btype;
+            logger = _logger;
+
+            webHelper = _webHelper;
         }
+
         /// <summary>
-        /// 获取评论承载者标识符前缀与本体
+        /// 获取评论承载者基本要素
         /// </summary>
-        /// <param name="Id">评论承载者标识符</param>
-        /// <returns>string[2]或null</returns>
-        public static string[] GetIdHeadBody(string Id)
+        /// <param name="formalId">评论承载者标识符</param>
+        /// <returns>评论承载者类型, 作品Id前缀, 去除前缀的作品Id</returns>
+        public Tuple<BearerType, string, string> GetBearerBasics(string formalId)
         {
-            var PosSplit = Id.IndexOf('|');
-            if (PosSplit == -1 || PosSplit + 1 >= Id.Length)
+            var parts = formalId.Split('|');
+
+            Tuple<BearerType, string, string> basics = parts[0] switch
             {
-                return null;
-            }
-            return new string[] { Id[0..PosSplit], Id[(PosSplit + 1)..] };
+                "aid" or "bvid" => Tuple.Create(BearerType.Video, parts[0], parts[1]),
+                "cv" => Tuple.Create(BearerType.Article, parts[0], parts[1]),
+                "did" => Tuple.Create(BearerType.Dynamic, parts[0], parts[1]),
+                _ => Tuple.Create(BearerType.Error, parts[0], parts[1]),
+            };
+
+            return basics;
         }
+
         /// <summary>
-        /// 检查评论承载者标识符是否符合规定
+        /// 检查评论承载者标识符是否符合基本语法
         /// </summary>
-        /// <param name="Id">评论承载者标准标识符</param>
-        /// <returns>格式化正确: true, 格式化错误: false</returns>
-        public static Task<bool> CheckIdHead(string Id)
+        /// <param name="formalId">评论承载者标准标识符</param>
+        /// <returns>格式正确: true, 格式错误: false</returns>
+        public bool CheckIdSyntax(string formalId)
         {
-            var parts = GetIdHeadBody(Id);
-            if (parts != null && parts.Length == 2)
-            {
-                var head = parts[0];
-                if (head == "aid" || head == "bvid" ||
-                    head == "cv" || head == "did")
-                {
-                    return Task.FromResult(true);
-                }
-            }
-            return Task.FromResult(false);
+            return !string.IsNullOrEmpty(formalId)
+                && ((formalId.StartsWith("aid|") && formalId.Length > 4)
+                    || (formalId.StartsWith("bvid|") && formalId.Length > 5)
+                    || (formalId.StartsWith("cv|") && formalId.Length > 3)
+                    || (formalId.StartsWith("did|") && formalId.Length > 4));
         }
+
         /// <summary>
-        /// 根据评论承载者标识符获取评论承载者信息接口URL
+        /// 根据作品Id前缀获取评论承载者详细信息接口URL
         /// </summary>
-        /// <param name="Id">评论承载者标识符</param>
-        /// <returns>评论承载者信息接口URL或string.Empty</returns>
-        public static string GetInfoAPIURL(string Id)
-        {
-            var parts = GetIdHeadBody(Id);
-            if (parts != null && parts.Length == 2)
-            {
-                // 前缀
-                var head = parts[0];
-                // 真实Id
-                var body = parts[1];
-                string InfoAPIURL = head switch
-                {
-                    "aid" => $"http://api.bilibili.com/x/web-interface/archive/stat?aid={body}",
-                    "bvid" => $"http://api.bilibili.com/x/web-interface/archive/stat?bvid={body}",
-                    "cv" => $"http://api.bilibili.com/x/article/viewinfo?id={body}",
-                    "did" => $"http://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/get_dynamic_detail?dynamic_id={body}",
-                    _ => string.Empty,
-                };
-                return InfoAPIURL;
-            }
-            return string.Empty;
-        }
-        /// <summary>
-        /// 根据评论承载者标识符获取评论承载者详细信息接口URL
-        /// </summary>
-        /// <param name="Id">评论承载者标识符</param>
+        /// <param name="idPrefix">作品Id前缀</param>
+        /// <param name="idBody">作品Id主体</param>
         /// <returns>评论承载者详细信息接口URL或string.Empty</returns>
-        public static string GetBearerDetailAPIURL(string Id)
+        public string GetBearerDetailAPIURL(string idPrefix, string idBody)
         {
-            var parts = GetIdHeadBody(Id);
-            if (parts != null && parts.Length == 2)
+            return idPrefix switch
             {
-                // 前缀
-                var head = parts[0];
-                // 真实Id
-                var body = parts[1];
-                string InfoAPIURL = head switch
-                {
-                    "aid" => $"http://api.bilibili.com/x/web-interface/view/detail?aid={body}",
-                    "bvid" => $"http://api.bilibili.com/x/web-interface/view/detail?bvid={body}",
-                    "cv" => $"http://api.bilibili.com/x/article/viewinfo?id={body}",
-                    "did" => $"http://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/get_dynamic_detail?dynamic_id={body}",
-                    _ => string.Empty,
-                };
-                return InfoAPIURL;
-            }
-            return string.Empty;
+                "aid" => string.Format(BearerDetailAPITemplate.AID, idBody),
+                "bvid" => string.Format(BearerDetailAPITemplate.BVID, idBody),
+                "cv" => string.Format(BearerDetailAPITemplate.CV, idBody),
+                "did" => string.Format(BearerDetailAPITemplate.DID, idBody),
+                _ => string.Empty,
+            };
         }
+
+        /// <summary>
+        /// 评论条目URL前缀
+        /// </summary>
+        /// <param name="idPrefix">作品Id前缀</param>
+        /// <param name="idBody">作品Id主体</param>
+        /// <returns>评论条目URL前缀或string.Empty</returns>
+        public string GetReplyURLPrefix(string idPrefix, string idBody)
+        {
+            return idPrefix switch
+            {
+                "aid" => string.Format(ReplyURLPrefixTemplate.AID, idBody),
+                "bvid" => string.Format(ReplyURLPrefixTemplate.BVID, idBody),
+                "cv" => string.Format(ReplyURLPrefixTemplate.CV, idBody),
+                "did" => string.Format(ReplyURLPrefixTemplate.DID, idBody),
+                _ => string.Empty,
+            };
+        }
+
         /// <summary>
         /// 获取评论区信息接口URL
         /// </summary>
-        /// <param name="Id">评论承载者标识符</param>
+        /// <param name="idPrefix">作品Id前缀</param>
+        /// <param name="idBody">作品Id主体</param>
+        /// <param name="detailData">作品数据</param>
         /// <returns>评论区信息接口URL或string.Empty</returns>
-        public static string GetReplyAPIURL(string Id)
+        public string GetReplyAPIURL(string idPrefix, string idBody, DetailData detailData)
         {
-            var parts = GetIdHeadBody(Id);
-            if (parts != null && parts.Length == 2)
+            var oid = idBody;
+
+            int workType = idPrefix switch
             {
-                // 前缀
-                var head = parts[0];
-                // 真实Id
-                var body = parts[1];
-                string OID = body;
-                int WorkType;
-                if (head == "aid" || head == "bvid")
+                "aid" or "bvid" => 1,
+                "cv" => 12,
+                "did" => 17,
+                _ => throw new ArgumentException(null, nameof(idPrefix)),
+            };
+
+            // 动态需要判断是否存在rid
+            if (workType == 17)
+            {
+                var dynamicDetail = (DynamicDetailData)detailData;
+
+                // get_dynamic_detail中type为4: WorkType=17, OID=动态ID
+                // get_dynamic_detail中type为2: WorkType=11, OID=rid
+                if (dynamicDetail.card.desc.type == 2)
                 {
-                    WorkType = 1;
-                }
-                else if (head == "cv")
-                {
-                    WorkType = 12;
-                    return $"http://api.bilibili.com/x/v2/reply?oid={OID}&type={WorkType}&sort=1&ps=49&pn=";
-                }
-                else if (head == "did")
-                {
-                    WorkType = 17;
-                }
-                else
-                {
-                    return string.Empty;
-                }
-                var InfoAPIURL = GetInfoAPIURL(Id);
-                if (InfoAPIURL != string.Empty)
-                {
-                    var Content = WebHelper.GetResponse(InfoAPIURL, "{\"code\":0,");
-                    if (Content != string.Empty)
-                    {
-                        var top = JsonSerializer.Deserialize<Dictionary<string, object>>(Content);
-                        var data = JsonSerializer.Deserialize<Dictionary<string, object>>(top["data"].ToString());
-                        // 动态需要判断是否存在rid
-                        if (WorkType == 17 && data.ContainsKey("card"))
-                        {
-                            var card = JsonSerializer.Deserialize<Dictionary<string, object>>(data["card"].ToString());
-                            var desc = JsonSerializer.Deserialize<Dictionary<string, object>>(card["desc"].ToString());
-                            // get_dynamic_detail中type为4: WorkType=17, OID=动态ID
-                            // get_dynamic_detail中type为2: WorkType=11, OID=rid
-                            if (desc["type"].ToString() == "2")
-                            {
-                                WorkType = 11;
-                                OID = desc["rid"].ToString();
-                            }
-                        }
-                        // 视频稿件使用aid作为oid
-                        else if (WorkType == 1)
-                        {
-                            OID = data["aid"].ToString();
-                        }
-                        return $"http://api.bilibili.com/x/v2/reply?oid={OID}&type={WorkType}&sort=1&ps=49&pn=";
-                    }
+                    workType = 11;
+                    oid = dynamicDetail.card.desc.rid.ToString();
                 }
             }
-            return string.Empty;
+            // 视频稿件使用aid作为oid
+            else if (workType == 1)
+            {
+                var videoDetail = (VideoDetailData)detailData;
+
+                oid = videoDetail.View.aid.ToString();
+            }
+
+            return string.Format(ReplyAPITemplate, oid, workType);
         }
+
         /// <summary>
-        /// 评论条目URL
+        /// 检查评论承载者是否对应有效的媒体稿件/动态
         /// </summary>
-        /// <param name="Id">评论承载者标识符</param>
-        /// <returns>评论条目URL或string.Empty</returns>
-        public static string GetReplyURL(string Id)
+        /// <param name="detailAPI">详细信息API</param>
+        /// <typeparam name="T">ReturnData</typeparam>
+        /// <returns>评论承载者有效: true, ReturnData; 评论承载者Id无效: false, default</returns>
+        public async Task<Tuple<bool, DetailData>> IsValidWork<T>(string detailAPI) where T : DetailData
         {
-            var parts = GetIdHeadBody(Id);
-            if (parts != null && parts.Length == 2)
+            BilibiliAPIReturn<T> apiReturn;
+
+            try
             {
-                // 前缀
-                var head = parts[0];
-                // 真实Id
-                var body = parts[1];
-                string ReplyURL = head switch
-                {
-                    "aid" => $"http://www.bilibili.com/video/av{body}#reply",
-                    "bvid" => $"http://www.bilibili.com/video/BV{body}#reply",
-                    "cv" => $"http://www.bilibili.com/read/cv{body}#reply",
-                    "did" => $"http://t.bilibili.com/{body}#reply",
-                    _ => string.Empty,
-                };
-                return ReplyURL;
+                apiReturn = await webHelper.GetResponse<T>(detailAPI, false);
             }
-            return string.Empty;
-        }
-        /// <summary>
-        /// 检查评论承载者Id是否对应有效的媒体稿件/动态
-        /// </summary>
-        /// <param name="Id">评论承载者Id</param>
-        /// <returns>评论承载者Id有效: true, 评论承载者Id无效: false</returns>
-        public static bool IsValidId(string Id)
-        {
-            var InfoAPIURL = GetInfoAPIURL(Id);
-            if (InfoAPIURL != string.Empty)
+            catch (JsonException ex)
             {
-                var Content = WebHelper.GetResponse(InfoAPIURL, "{\"code\":");
-                if (Content != string.Empty && Content.StartsWith("{\"code\":0,"))
-                {
-                    var top = JsonSerializer.Deserialize<Dictionary<string, object>>(Content);
-                    if (top.ContainsKey("data"))
-                    {
-                        var data = JsonSerializer.Deserialize<Dictionary<string, object>>(top["data"].ToString());
-                        if (data.Count > 1)
-                        {
-                            return true;
-                        }
-                    }
-                }
+                logger.LogError(message: ex.ToString(),
+                    args: new object[] { detailAPI });
+
+                return Tuple.Create(false, default(DetailData));
             }
-            return false;
+            catch (HttpRequestException ex)
+            {
+                logger.LogError(message: ex.ToString(),
+                    args: new object[] { detailAPI });
+
+                return Tuple.Create(false, default(DetailData));
+            }
+
+            if (apiReturn.code != 0)
+            {
+                return Tuple.Create(false, default(DetailData));
+            }
+
+            return Tuple.Create(true, (DetailData)apiReturn.data);
         }
+
         /// <summary>
         /// 获取随机抽选结果列表
         /// </summary>
-        /// <param name="Source">原始列表</param>
-        /// <param name="Count">抽选个数</param>
-        public static List<int> GetRandomIdxList(List<int> Source, int Count)
+        /// <param name="total">数据总量</param>
+        /// <param name="cnt">抽选个数</param>
+        /// <returns>抽取的下标列表</returns>
+        public List<int> GetRandomIdxList(int total, int cnt)
         {
-            var random = new Random(Guid.NewGuid().GetHashCode());
-            int sourceLen = Source.Count;
-            var result = new List<int>();
-            for (int i = sourceLen; i > sourceLen - Count; --i)
+            var idxList = Enumerable.Range(0, total).ToArray();
+
+            var randIdxList = new List<int>();
+
+            for (int rb = total; rb > total - cnt; --rb)
             {
-                int pRandom = random.Next(0, i);
-                result.Add(Source.ElementAt(pRandom));
-                Source[pRandom] = Source[i - 1];
+                var pRandom = Random.Shared.Next(0, rb);
+
+                randIdxList.Add(idxList[pRandom]);
+                idxList[pRandom] = idxList[rb - 1];
             }
-            return result;
+
+            return randIdxList;
         }
+
         /// <summary>
         /// 获取B站分享短链接指向的目标URL
         /// </summary>
-        /// <param name="ShareURL">分享短链接URL</param>
+        /// <param name="shareURL">分享短链接URL</param>
         /// <returns>目标作品URL或string.Empty</returns>
-        public static string GetRealURL(string ShareURL)
+        private async Task<string> GetRealURL(string shareURL)
         {
-            var RealURL = WebHelper.GetRedirect(ShareURL);
-            if (RealURL != string.Empty && !RealURL.Contains("b23.tv"))
+            string realURL = string.Empty;
+
+            try
             {
-                return RealURL;
+                realURL = await webHelper.GetRedirect(shareURL);
             }
-            return string.Empty;
-        }
-        /// <summary>
-        /// 根据ID获取格式化的评论承载者标准标识符
-        /// </summary>
-        /// <param name="RawId">av号/bv号等</param>
-        /// <returns>格式化但未联网验证有效性的评论承载者标准标识符 或 string.Empty</returns>
-        public static string GetFormalIdFromRawId(string RawId)
-        {
-            if (RawId.Length > 0)
+            catch (HttpRequestException ex)
             {
-                // Id由数字开头: 动态
-                if (RawId[0] >= '0' && RawId[0] <= '9')
-                {
-                    return $"did|{RawId}";
-                }
-                // 其他作品
-                else if (RawId.Length >= 2)
-                {
-                    var Prefix = RawId[..2].ToLower();
-                    var Body = RawId[2..];
-                    return Prefix switch
-                    {
-                        "av" => $"aid|{Body}",
-                        "bv" => $"bvid|{Body}",
-                        "cv" => $"cv|{Body}",
-                        _ => string.Empty,
-                    };
-                }
+                logger.LogError(message: ex.ToString(),
+                    args: new object[] { shareURL });
             }
-            return string.Empty;
+
+            return realURL;
         }
+
         /// <summary>
         /// 根据ID或URL获取评论承载者标识符
         /// </summary>
         /// <param name="pattern">作品RawID或URL</param>
         /// <returns>格式化的评论承载者标识符 或 string.Empty</returns>
-        public static string GetFormalIdFromPattern(string pattern)
+        public async Task<string> GetFormalIdFromPattern(string pattern)
         {
-            if (pattern.Length > 0)
+            string bearerId = string.Empty;
+
+            #region 去除可能包含的锚定
+            if (pattern.Contains('#'))
             {
-                // 去除可能包含的锚定
-                if (pattern.Contains('#'))
-                {
-                    pattern = pattern[..pattern.IndexOf('#')];
-                }
-                // URL
-                if (pattern.StartsWith("http"))
-                {
-                    // 需要解析跳转
-                    if (pattern.Contains("b23.tv"))
-                    {
-                        var RealURL = GetRealURL(pattern);
-                        if (RealURL != string.Empty)
-                        {
-                            return GetFormalIdFromPattern(RealURL);
-                        }
-                    }
-                    // 只需提取RawId
-                    else
-                    {
-                        var Lower = pattern.ToLower();
-                        string RawId;
-                        if (Lower.Contains("/av"))
-                        {
-                            RawId = pattern[(Lower.IndexOf("/av") + 1)..];
-                        }
-                        else if (Lower.Contains("/bv"))
-                        {
-                            RawId = pattern[(Lower.IndexOf("/bv") + 1)..];
-                        }
-                        else if (Lower.Contains("/cv"))
-                        {
-                            RawId = pattern[(Lower.IndexOf("/cv") + 1)..];
-                        }
-                        else if (Lower.Contains("t.bilibili.com/"))
-                        {
-                            RawId = pattern[(Lower.IndexOf("t.bilibili.com/") + 15)..];
-                        }
-                        else
-                        {
-                            RawId = string.Empty;
-                        }
-                        // 去除后续参数
-                        if (RawId.Contains('?'))
-                        {
-                            RawId = RawId[..RawId.IndexOf('?')];
-                        }
-                        // 去除子级别路径
-                        if (RawId.Contains('/'))
-                        {
-                            RawId = RawId[..RawId.IndexOf('/')];
-                        }
-                        if (RawId.Length > 0)
-                        {
-                            return GetFormalIdFromRawId(RawId);
-                        }
-                    }
-                }
-                // RawID
-                else
-                {
-                    return GetFormalIdFromRawId(pattern);
-                }
+                pattern = pattern[..pattern.IndexOf('#')];
             }
-            return string.Empty;
+            #endregion
+
+            string rawId = string.Empty;
+
+            #region 根据URL获取rawId
+            if (pattern.StartsWith("http"))
+            {
+                #region 解析短分享链接为常规URL
+                if (pattern.Contains("b23.tv"))
+                {
+                    pattern = await GetRealURL(pattern);
+                }
+                #endregion
+
+                #region 从URL提取rawId
+                if (!string.IsNullOrEmpty(pattern))
+                {
+                    var lower = pattern.ToLower();
+
+                    if (lower.Contains("/av"))
+                    {
+                        rawId = pattern[(lower.IndexOf("/av") + 1)..];
+                    }
+                    else if (lower.Contains("/bv"))
+                    {
+                        rawId = pattern[(lower.IndexOf("/bv") + 1)..];
+                    }
+                    else if (lower.Contains("/cv"))
+                    {
+                        rawId = pattern[(lower.IndexOf("/cv") + 1)..];
+                    }
+                    else if (lower.Contains("t.bilibili.com/"))
+                    {
+                        rawId = pattern[(lower.IndexOf("t.bilibili.com/") + 15)..];
+                    }
+
+                    #region 去除后续参数
+                    if (rawId.Contains('?'))
+                    {
+                        rawId = rawId[..rawId.IndexOf('?')];
+                    }
+                    #endregion
+
+                    #region 去除子级别路径
+                    if (rawId.Contains('/'))
+                    {
+                        rawId = rawId[..rawId.IndexOf('/')];
+                    }
+                    #endregion
+                }
+                #endregion
+            }
+            else
+            {
+                rawId = pattern;
+            }
+            #endregion
+
+            #region 根据rawId获取格式化的评论承载者标准标识符(未联网验证formal Id)
+            if (!string.IsNullOrEmpty(rawId))
+            {
+                #region Id由数字开头: 动态
+                if (rawId[0] >= '0' && rawId[0] <= '9')
+                {
+                    bearerId = $"did|{rawId}";
+                }
+                #endregion
+                #region 其他作品
+                else if (rawId.Length >= 2)
+                {
+                    var prefix = rawId[..2].ToLower();
+
+                    var body = rawId[2..];
+
+                    bearerId = prefix switch
+                    {
+                        "av" => $"aid|{body}",
+                        "bv" => $"bvid|{body}",
+                        "cv" => $"cv|{body}",
+                        _ => string.Empty,
+                    };
+                }
+                #endregion
+            }
+            #endregion
+
+            return bearerId;
         }
+
+        /// <summary>
+        /// B站返回时间戳转换为DateTime
+        /// </summary>
+        /// <param name="timestamp">时间戳</param>
+        /// <returns>DateTime</returns>
+        public DateTime TimeTrans(long timestamp) => new DateTime(1970, 1, 1, 8, 0, 0, DateTimeKind.Utc).AddSeconds(timestamp);
     }
 }
