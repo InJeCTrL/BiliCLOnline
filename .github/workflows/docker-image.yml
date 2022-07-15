@@ -24,6 +24,6 @@ jobs:
           uses: docker/build-push-action@v2
           with:
             context: .
-            file: ./BiliCLOnline/Dockerfile
+            file: ./Dockerfile
             push: true
             tags: injectrl/biliclonline:latest
