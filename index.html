@@ -301,18 +301,19 @@
 					}
 				});
 				$("#set").click(function(){
-					$("#set").disable();
+					$('#set').addClass("layui-btn-disabled").attr("disabled", true);
 					$.ajax({
 						url: "https://biliclonline.injectrl.xyz/api/Bearer",
 						type: "get",
 						data: { pattern: $("#pattern").val() },
 						crossDomain: true,
 						success: function(data){
+							$('#set').removeClass("layui-btn-disabled").attr("disabled", false);
 							if (data["code"] != 0){
 								layer.msg(data["message"]);
 							}
 							else{
-								let	bearer = data["data"]["bearer"];
+								let bearer = data["data"]["bearer"];
 								Id = bearer["id"];
 								$("#id").val(Id);
 								$("#uid").val(bearer["uid"]);
@@ -359,7 +360,6 @@
 										break;
 								}
 							}
-							$("#set").enable();
 						},
 						error: function(e){
 							layer.msg("服务暂不可用");
@@ -407,7 +407,7 @@
 							return;
 						}
 					}
-					$("#lottery").disable();
+					$('#lottery').addClass("layui-btn-disabled").attr("disabled", true);
 					layer.msg("抽奖请求已发出，请等待");
 					$.ajax({
 						url: "https://biliclonline.injectrl.xyz/api/Lottery/" + Id,
@@ -450,10 +450,8 @@
 								layer.msg("已获取幸运列表");
 								element.tabChange('tabs', 'third');
 							}
-							$("#lottery").enable();
 						},
 						error: function(j, e){
-							$('#lottery').removeClass("layui-btn-disabled").attr("disabled", false);
 							if (j.status == 400){
 								layer.msg("参数错误");
 							}
