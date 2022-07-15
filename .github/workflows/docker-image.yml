@@ -23,6 +23,7 @@ jobs:
           name: Build and push
           uses: docker/build-push-action@v2
           with:
-            context: BiliCLOnline
+            context: .
+            path: BiliCLOnline/Dockerfile
             push: true
             tags: injectrl/biliclonline:latest
