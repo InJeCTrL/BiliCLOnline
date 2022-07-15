@@ -21,7 +21,7 @@ jobs:
             password: ${{ secrets.DOCKERHUB_TOKEN }}
       -
           name: Build the Docker image
-          run: docker build . --file ./BiliCLOnline/Dockerfile --tag injectrl/biliclonline:latest
+          run: docker build ./BiliCLOnline --file ./BiliCLOnline/Dockerfile --tag injectrl/biliclonline:latest
       -
           name: Publish image to docker hub
           run: docker push injectrl/biliclonline:latest
