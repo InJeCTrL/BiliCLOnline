@@ -20,13 +20,10 @@ jobs:
             username: ${{ secrets.DOCKERHUB_USERNAME }}
             password: ${{ secrets.DOCKERHUB_TOKEN }}
       -
-          name: Build the Docker image
-          run: docker build . --file ./BiliCLOnline/Dockerfile --tag injectrl/biliclonline:latest
-      -
-              name: Build and push
-              uses: docker/build-push-action@v2
-              with:
-                context: .
-                file: ./BiliCLOnline/Dockerfile
-                push: true
-                tags: injectrl/biliclonline:latest
+          name: Build and push
+          uses: docker/build-push-action@v2
+          with:
+            context: .
+            file: ./BiliCLOnline/Dockerfile
+            push: true
+            tags: injectrl/biliclonline:latest
