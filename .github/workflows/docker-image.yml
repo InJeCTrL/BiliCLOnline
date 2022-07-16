@@ -14,6 +14,11 @@ jobs:
 
     steps:
       -
+          name: Login to Azure
+          uses: azure/login@v1
+          with:
+            creds: ${{ secrets.AZURE_CREDENTIAL }}
+      -
           name: Check out repository code
           uses: actions/checkout@v3
       -
@@ -30,3 +35,11 @@ jobs:
             file: BiliCLOnline/Dockerfile
             push: true
             tags: injectrl/biliclonline:latest
+      -
+          name: Deploy to ACI
+          uses: Azure/aci-deploy@v1
+          with:
+            resource-group: biliclonline
+            image: injectrl/biliclonline:latest
+            name: biliclonline
+            location: 'Korea Central'
