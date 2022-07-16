@@ -41,5 +41,6 @@ jobs:
           with:
             resource-group: biliclonline
             image: injectrl/biliclonline:latest
+            dns-name-label: biliclonline
             name: biliclonline
             location: 'Korea Central'
