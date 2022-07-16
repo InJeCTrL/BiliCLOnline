@@ -27,11 +27,6 @@ namespace BiliCLOnline.Utils
             Timeout = TimeSpan.FromSeconds(5)
         };
 
-        /// <summary>
-        /// JSON反序列化选项
-        /// </summary>
-        private readonly JsonSerializerOptions jsOptions = new();
-
         private readonly ILogger<WebHelper> logger;
 
         public WebHelper(ILogger<WebHelper> _logger)
@@ -39,7 +34,6 @@ namespace BiliCLOnline.Utils
             var saKey = Environment.GetEnvironmentVariable("SAKey");
 
             BiliRequestClient.DefaultRequestHeaders.Add("x-api-key", saKey);
-            jsOptions.DefaultBufferSize = 5242880;
             logger = _logger;
         }
 
@@ -66,15 +60,11 @@ namespace BiliCLOnline.Utils
                     responseMsg.EnsureSuccessStatusCode();
 
                     using var responseStream = await responseMsg.Content.ReadAsStreamAsync();
-                    responseWrapper = await JsonSerializer.DeserializeAsync<WebAPIReturn>(
-                        responseStream, jsOptions
-                        );
+                    responseWrapper = await JsonSerializer.DeserializeAsync<WebAPIReturn>(responseStream);
 
                     try
                     {
-                        responseJSON = JsonSerializer.Deserialize<BilibiliAPIReturn<T>>(
-                            responseWrapper.content, jsOptions
-                            );
+                        responseJSON = JsonSerializer.Deserialize<BilibiliAPIReturn<T>>(responseWrapper.content);
                     }
                     catch (JsonException)
                     {
