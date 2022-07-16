@@ -155,7 +155,7 @@ namespace BiliCLOnline.Utils
 
             try
             {
-                apiReturn = await webHelper.GetResponse<T>(detailAPI, false);
+                apiReturn = await webHelper.GetResponse<T>(detailAPI);
             }
             catch (JsonException ex)
             {

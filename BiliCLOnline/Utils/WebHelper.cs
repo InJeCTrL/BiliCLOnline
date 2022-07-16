@@ -17,6 +17,11 @@ namespace BiliCLOnline.Utils
         private readonly HttpClient BiliRequestClient = new();
 
         /// <summary>
+        /// 用于请求BilibiliAPI的httpclient(无代理)
+        /// </summary>
+        private readonly HttpClient BiliRequestLocalClient = new();
+
+        /// <summary>
         /// 用于跳转分享链接的httpclient
         /// </summary>
         private readonly HttpClient BiliJumpRequestClient = new(new HttpClientHandler 
@@ -41,19 +46,49 @@ namespace BiliCLOnline.Utils
         /// 获取B站API的响应JSON
         /// </summary>
         /// <param name="URL">B站APIURL</param>
-        /// <param name="ensureSucc">确保返回中code为0</param>
         /// <typeparam name="T">IReturnData</typeparam>
         /// <returns>响应JSON</returns>
-        public async Task<BilibiliAPIReturn<T>> GetResponse<T>(string URL, bool ensureSucc = true) where T : ReturnData
+        public async Task<BilibiliAPIReturn<T>> GetResponse<T>(string URL) where T : ReturnData
         {
-            BilibiliAPIReturn<T> responseJSON;
+            BilibiliAPIReturn<T> responseJSON = default;
 
             WebAPIReturn responseWrapper = default;
 
-            URL = $"{Constants.ScrapingAntAPIPrefix}{HttpUtility.UrlEncode(URL)}";
-
             try
             {
+                #region 使用无代理httpclient尝试
+                var localSucc = false;
+
+                try
+                {
+                    using var responseMsg = await BiliRequestLocalClient.GetAsync(URL);
+                    responseMsg.EnsureSuccessStatusCode();
+
+                    using var responseStream = await responseMsg.Content.ReadAsStreamAsync();
+                    responseJSON = await JsonSerializer.DeserializeAsync<BilibiliAPIReturn<T>>(responseStream);
+
+                    if (responseJSON.code == 412)
+                    {
+                        throw new HttpRequestException(URL);
+                    }
+
+                    localSucc = true;
+                }
+                catch (Exception ex) when (ex is HttpRequestException || ex is JsonException || ex is TaskCanceledException)
+                {
+                    logger.LogError(message: ex.ToString(),
+                                    args: new object[] { URL });
+                }
+
+                if (localSucc)
+                {
+                    return responseJSON;
+                }
+                #endregion
+
+                #region 使用有代理的httpclient
+                URL = $"{Constants.ScrapingAntAPIPrefix}{HttpUtility.UrlEncode(URL)}";
+
                 do
                 {
                     using var responseMsg = await BiliRequestClient.GetAsync(URL);
@@ -71,11 +106,12 @@ namespace BiliCLOnline.Utils
                         continue;
                     }
 
-                    if (!ensureSucc || (responseJSON.code == 0))
+                    if (responseJSON.code != 412)
                     {
                         break;
                     }
                 } while (true);
+                #endregion
             }
             catch (HttpRequestException ex)
             {
