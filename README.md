@@ -4,7 +4,7 @@
 
 ## 介绍
 
-本项目是上一年写的WPF应用[BiliCommentLottery](https://github.com/InJeCTrL/BiliCommentLottery)的升级版，尽管当时使用的SDK是DotNet Core 3.1，但由于WPF是Windows操作系统的专用UI框架，无法跨平台，给许多使用者带来些许不便，所以这次重构了老项目，将其由WPF应用改为WEB应用，后端使用DotNet 5.0开发WebAPI，前端界面使用LayUI搭建，这次在诸多平台上都可以使用了！（直接访问这个repo的[github-pages](https://injectrl.github.io/BiliCLOnline/)就可以）
+本项目是上一年写的WPF应用[BiliCommentLottery](https://github.com/InJeCTrL/BiliCommentLottery)的升级版，尽管当时使用的SDK是DotNet Core 3.1，但由于WPF是Windows操作系统的专用UI框架，无法跨平台，给许多使用者带来些许不便，所以这次重构了老项目，将其由WPF应用改为WEB应用，后端基于DotNet 6.0开发WebAPI，前端界面使用LayUI搭建，这次在诸多平台上都可以使用了！（直接访问这个repo的[github-pages](https://injectrl.github.io/BiliCLOnline/)就可以）
 
 ## 特点
 
@@ -54,15 +54,29 @@
    
      `https://b23.tv/Qzqqj9`
 
-## 局限
+## 更新与其它说明
+
+2022-07-17更新：
+
+1. 抽奖方式重新改回全量抽奖，同时规定稿件评论数上限阈值（40000）
+2. 重写大部分逻辑
+3. 服务由个人云服务器切换到ACI部署
+4. 停用原有的免费公用代理池，使用ScrapingAnt提供代理服务
+5. 切换Dotnet版本到6.0
+
+2021-08-07更新：
+
+评论数多（大于500）的稿件使用非全量抽奖，评论数少（不大于500）的稿件使用全量抽奖，尽可能避免重复评论导致的抽奖概率失衡。
+
+2021-06-20更新：
+
+移除原有的最大评论页数阈值，改为请求B站接口最大次数阈值，增加可用性。
+
+2021-06-19更新：
+
+将原有的全量抽奖机制修改为非全量修改机制，抽奖的时间随设定中奖数改变，最坏情况下退化为全量抽奖。
 
 负责获取评论列表的网络通讯逻辑由以前的“分散在每个客户端”变成现在的“集中在一个服务器”，并且从某个时间开始，Bilibili对评论接口的访问频率做出限制，所以一段时间内较高频率不间断地请求评论接口可能会使目前部署后端的服务器被短时间封禁。为了避免服务器老被官方封禁，我在网络请求上接入了国内代理池，由于代理池中可用代理数量有限且切换代理有一定的时间延迟，所以可能在使用过程中增加等待时间。
-
-2021-06-19更新后，将原有的全量抽奖机制修改为非全量修改机制，抽奖的时间随设定中奖数改变，最坏情况下退化为全量抽奖。
-
-2021-06-20更新后，移除原有的最大评论页数阈值，改为请求B站接口最大次数阈值，增加可用性。
-
-2021-08-07更新后，评论数多（大于500）的稿件使用非全量抽奖，评论数少（不大于500）的稿件使用全量抽奖，尽可能避免重复评论导致的抽奖概率失衡。
 
 ## 效果展示展示
 
@@ -84,17 +98,16 @@
 
 ## 使用技术
 
-- 后端WebAPI: DotNet 5.0
+- 后端WebAPI: DotNet 6.0
 - 前端UI: LayUI 2.5.7
 
 ## 后端部署
 
 ```shell
-docker run -d -it --name {name} -p IP:Port:5000 -e corsTarget={Front-end Domain} injectrl/biliclonline:x.x.x
+docker pull injectrl/biliclonline:latest
+docker run -d -it --name {name} -p IP:Port:5000 -e corsTarget={Front-end Domain} -e SAKey={ScrapingAnt Key} injectrl/biliclonline:latest
 ```
 
 ## 目前服务器端
 
-由nginx作为代理转发https请求至运行后端WebAPI-Server的Docker容器
-
-基于DotNet 5.0的WebAPI-Server只响应http请求，所有https请求由nginx负责转发
+服务托管到Azure Container Instances

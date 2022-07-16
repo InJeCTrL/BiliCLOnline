@@ -265,7 +265,7 @@
 				</div>
 			</div>
 			<div style="text-align: center;padding-bottom: 10px;">
-				Powered by .NET 5.0 on Docker
+				Powered by .NET 6.0 on Docker
 			</div>
 		</div>
 		<script type="text/html" id="tools">
@@ -303,7 +303,7 @@
 				$("#set").click(function(){
 					$('#set').addClass("layui-btn-disabled").attr("disabled", true);
 					$.ajax({
-						url: "https://biliclonline.injectrl.xyz/api/Bearer",
+						url: "https://biliclonline.jollymeadow-86e0db09.koreacentral.azurecontainerapps.io/api/Bearer",
 						type: "get",
 						data: { pattern: $("#pattern").val() },
 						crossDomain: true,
@@ -410,7 +410,7 @@
 					$('#lottery').addClass("layui-btn-disabled").attr("disabled", true);
 					layer.msg("抽奖请求已发出，请等待");
 					$.ajax({
-						url: "https://biliclonline.injectrl.xyz/api/Lottery/" + Id,
+						url: "https://biliclonline.jollymeadow-86e0db09.koreacentral.azurecontainerapps.io/api/Lottery/" + Id,
 						type: "get",
 						data: datasend,
 						crossDomain: true,
