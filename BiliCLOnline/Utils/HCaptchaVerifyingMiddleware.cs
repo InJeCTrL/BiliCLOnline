@@ -46,7 +46,8 @@ namespace BiliCLOnline.Utils
                     Count = 0,
                     Data = null,
                     Message = "Captcha validation not passed"
-                });
+                },
+                new JsonSerializerOptions(JsonSerializerDefaults.Web));
         }
     }
 }
