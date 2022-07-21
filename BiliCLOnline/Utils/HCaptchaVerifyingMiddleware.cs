@@ -38,6 +38,9 @@ namespace BiliCLOnline.Utils
                 }
             }
 
+            #region 校验不通过
+            context.Response.ContentType = "application/json; charset=utf-8";
+
             await JsonSerializer.SerializeAsync(
                 context.Response.Body,
                 new ResultWrapper
@@ -48,6 +51,7 @@ namespace BiliCLOnline.Utils
                     Message = "Captcha validation not passed"
                 },
                 new JsonSerializerOptions(JsonSerializerDefaults.Web));
+            #endregion
         }
     }
 }
