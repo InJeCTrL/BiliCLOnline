@@ -321,10 +321,11 @@
 				});
 				$("#set").click(function(){
 					$('#set').addClass("layui-btn-disabled").attr("disabled", true);
+					console.log($("#captcha1"));
 					$.ajax({
 						url: "https://biliclonline.jollymeadow-86e0db09.koreacentral.azurecontainerapps.io/api/Bearer",
 						type: "get",
-                        headers: { "h-captcha-response": $("#captcha1").children[0].attributes["data-hcaptcha-response"].nodeValue },
+                        headers: { "h-captcha-response": $("#captcha1")[0].children[0].attributes["data-hcaptcha-response"].nodeValue },
                         data: { pattern: $("#pattern").val() },
 						crossDomain: true,
 						success: function(data){
@@ -432,7 +433,7 @@
 					$.ajax({
 						url: "https://biliclonline.jollymeadow-86e0db09.koreacentral.azurecontainerapps.io/api/Lottery/" + Id,
 						type: "get",
-                        headers: { "h-captcha-response": $("#captcha2").children[0].attributes["data-hcaptcha-response"].nodeValue },
+                        headers: { "h-captcha-response": $("#captcha2")[0].children[0].attributes["data-hcaptcha-response"].nodeValue },
 						data: datasend,
 						crossDomain: true,
 						success: function(data){
