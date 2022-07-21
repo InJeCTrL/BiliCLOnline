@@ -122,7 +122,7 @@ namespace BiliCLOnline.Services
                 logger.LogWarning(message: "Unsupported work",
                                 args: new object[] { formalId, replyCount });
 
-                Tuple.Create("评论数大于4万, 暂不支持抽奖", Enumerable.Empty<Reply>());
+                return Tuple.Create("评论数大于4万, 暂不支持抽奖", new List<Reply>());
             }
 
             var fillTaskList = new List<Task>();
