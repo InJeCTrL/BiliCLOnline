@@ -48,7 +48,7 @@ namespace BiliCLOnline.Utils
                     Code = 1,
                     Count = 0,
                     Data = null,
-                    Message = "Captcha validation not passed"
+                    Message = "验证码校验不通过"
                 },
                 new JsonSerializerOptions(JsonSerializerDefaults.Web));
             #endregion
