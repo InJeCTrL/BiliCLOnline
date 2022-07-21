@@ -37,11 +37,9 @@ namespace BiliCLOnline.Utils
 
         private readonly ILogger<WebHelper> logger;
 
-        public WebHelper(ILogger<WebHelper> _logger)
+        public WebHelper(string SAKey, ILogger<WebHelper> _logger)
         {
-            var saKey = Environment.GetEnvironmentVariable("SAKey");
-
-            BiliRequestClient.DefaultRequestHeaders.Add("x-api-key", saKey);
+            BiliRequestClient.DefaultRequestHeaders.Add("x-api-key", SAKey);
             logger = _logger;
         }
 

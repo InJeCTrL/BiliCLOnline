@@ -1,4 +1,3 @@
-using AspNetCoreRateLimit;
 using BiliCLOnline.IServices;
 using BiliCLOnline.Services;
 using BiliCLOnline.Utils;
@@ -24,17 +23,7 @@ namespace BiliCLOnline
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            #region œﬁ¡˜≈‰÷√
-            services.AddOptions();
-            services.AddMemoryCache();
-            services.Configure<IpRateLimitOptions>(Configuration.GetSection("IpRateLimiting"));
-            services.AddInMemoryRateLimiting();
-            services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
-            services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
-            #endregion
-
-            var corsTarget = Environment.GetEnvironmentVariable("corsTarget");
-
+            services.AddSingleton(Configuration.GetValue<string>("SAKey"));
             services.AddSingleton<WebHelper>();
             services.AddSingleton<Helper>();
             services.AddScoped<IBearerInfo, BearerInfo>();
@@ -50,24 +39,26 @@ namespace BiliCLOnline
                 option.MaxConcurrentRequests = 10;
                 option.RequestQueueLimit = 50;
             });
+
             services.AddCors(options => 
             {
                 options.AddPolicy("cors", p => 
                 { 
-                    p.WithOrigins(corsTarget)
+                    p.WithOrigins(Configuration.GetValue<string>("CorsTarget"))
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials();
                 });
             });
+
             services.AddControllers();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-
             app.UseConcurrencyLimiter();
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -78,8 +69,6 @@ namespace BiliCLOnline
                 });
             }
             app.UseCors("cors");
-
-            app.UseMiddleware<CustomIpRateLimitMiddleware>();
 
             app.UseRouting();
 
