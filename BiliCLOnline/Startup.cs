@@ -23,7 +23,8 @@ namespace BiliCLOnline
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton(Configuration.GetValue<string>("SAKey"));
+            services.AddSingleton(Configuration);
+
             services.AddSingleton<WebHelper>();
             services.AddSingleton<Helper>();
             services.AddScoped<IBearerInfo, BearerInfo>();
@@ -69,6 +70,8 @@ namespace BiliCLOnline
                 });
             }
             app.UseCors("cors");
+
+            app.UseMiddleware<HCaptchaVerifyingMiddleware>();
 
             app.UseRouting();
 

@@ -20,6 +20,9 @@
         public const string DynamicURLTemplate =
             "https://t.bilibili.com/{0}";
 
+        public const string HCaptchaVerifyURL =
+            "https://hcaptcha.com/siteverify";
+
         public static class BearerDetailAPITemplate
         {
             public const string AID = "http://api.bilibili.com/x/web-interface/view/detail?aid={0}";

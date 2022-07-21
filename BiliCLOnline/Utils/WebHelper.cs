@@ -1,6 +1,8 @@
 ﻿using BiliCLOnline.Models;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Text.Json;
@@ -25,6 +27,11 @@ namespace BiliCLOnline.Utils
         };
 
         /// <summary>
+        /// 用于请求验证码服务的httpclient
+        /// </summary>
+        private readonly HttpClient HCaptchaClient = new();
+
+        /// <summary>
         /// 用于跳转分享链接的httpclient
         /// </summary>
         private readonly HttpClient BiliJumpRequestClient = new(new HttpClientHandler 
@@ -37,10 +44,46 @@ namespace BiliCLOnline.Utils
 
         private readonly ILogger<WebHelper> logger;
 
-        public WebHelper(string SAKey, ILogger<WebHelper> _logger)
+        public WebHelper(IConfiguration config, ILogger<WebHelper> _logger)
         {
-            BiliRequestClient.DefaultRequestHeaders.Add("x-api-key", SAKey);
+            BiliRequestClient.DefaultRequestHeaders.Add("x-api-key", config.GetValue<string>("SAKey"));
             logger = _logger;
+        }
+
+        /// <summary>
+        /// 校验验证码token是否正确
+        /// </summary>
+        /// <param name="token">验证码token</param>
+        /// <param name="secret">hcaptcha密钥</param>
+        /// <returns>是否通过验证</returns>
+        public async Task<bool> VerifyCaptcha(string token, string secret)
+        {
+            try
+            {
+                var postData = new List<KeyValuePair<string, string>>
+                {
+                    new KeyValuePair<string, string>("response", token),
+                    new KeyValuePair<string, string>("secret", secret)
+                };
+
+                using var response = await HCaptchaClient.PostAsync(
+                    Constants.HCaptchaVerifyURL,
+                    new FormUrlEncodedContent(postData)
+                    );
+                response.EnsureSuccessStatusCode();
+
+                using var responseStream = await response.Content.ReadAsStreamAsync();
+                var hCaptchaReturn = await JsonSerializer.DeserializeAsync<HCaptchaReturn>(responseStream);
+
+                return hCaptchaReturn.success;
+            }
+            catch (Exception ex) when (ex is HttpRequestException || ex is JsonException)
+            {
+                logger.LogError(message: ex.ToString(),
+                                args: new object[] { token, secret });
+            }
+
+            return false;
         }
 
         /// <summary>

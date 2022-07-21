@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<title>BiliCLOnline</title>
-		<meta charset="utf-8" />
-		<meta name="referrer" content="no-referrer" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=yes" />
-		<link rel="stylesheet" type="text/css" href="https://www.layuicdn.com/layui-v2.5.7/css/layui.css" />
-	</head>
+<head>
+	<title>BiliCLOnline</title>
+	<meta charset="utf-8" />
+	<meta name="referrer" content="no-referrer" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=yes" />
+	<link rel="stylesheet" type="text/css" href="https://www.layuicdn.com/layui-v2.5.7/css/layui.css" />
+	<script src="https://js.hcaptcha.com/1/api.js" async defer></script>
+</head>
 	<style type="text/css">
 		td > .layui-table-cell {
 			height: auto;
@@ -34,7 +35,7 @@
 					<div class="layui-tab-item layui-show">
 						<div class="layui-row">
 							<div class="layui-col-xs12">
-								<div class="layui-card layui-bg-gray">
+								<form id="getbaseinfo" class="layui-card layui-bg-gray">
 									<div class="layui-card-header">设置目标稿件/动态</div>
 									<div class="layui-card-body">
 										<div class="layui-form-item">
@@ -43,8 +44,9 @@
 												<input type="text" id="pattern" name="pattern" autocomplete="off" placeholder="" class="layui-input">
 											</div>
 										</div>
+										<div id="captcha1" style="text-align:center" class="h-captcha" data-sitekey="cb9b8821-c860-4a95-96a9-07f71cc79937"></div>
 										<div>
-											<button id="set" type="button" class="layui-btn layui-btn-normal layui-btn-lg layui-btn-radius layui-btn-fluid">OK</button>
+											<input id="set" type="button" value="OK" class="layui-btn layui-btn-normal layui-btn-lg layui-btn-radius layui-btn-fluid">
 										</div>
 										<div style="margin-top: 15px;">
 											说明：
@@ -58,7 +60,7 @@
 											</ul>
 										</div>
 									</div>
-								</div>
+								</form>
 							</div>
 						</div>
 					</div>
@@ -239,6 +241,7 @@
 													<input type="text" class="layui-input" id="contentspecified">
 												</div>
 											</div>
+											<div id="captcha2" style="text-align:center" class="h-captcha" data-sitekey="94bcabb4-f991-44ab-8dde-3b7b9fc40849"></div>
 											<div>
 												<button id="lottery" type="button" class="layui-btn layui-bg-red layui-btn-lg layui-btn-radius layui-btn-fluid">抽奖</button>
 											</div>
@@ -321,7 +324,7 @@
 					$.ajax({
 						url: "https://biliclonline.jollymeadow-86e0db09.koreacentral.azurecontainerapps.io/api/Bearer",
 						type: "get",
-						data: { pattern: $("#pattern").val() },
+                        data: $("#getbaseinfo").serialize(),
 						crossDomain: true,
 						success: function(data){
 							$('#set').removeClass("layui-btn-disabled").attr("disabled", false);
@@ -390,6 +393,7 @@
 						return;
 					}
 					var datasend = {
+                        "h-captcha-response": $("#captcha2").children[0].attributes["data-hcaptcha-response"].nodeValue,
 						Count: c, UnlimitedStart: $("#unlimitedstart").is(':checked'),
 						UnlimitedEnd: $("#unlimitedend").is(':checked'), GETStart: $("#getstart").is(':checked'),
 						LETEnd: $("#letend").is(':checked'), DuplicatedUID: $("#duplicateduid").is(':checked'),
