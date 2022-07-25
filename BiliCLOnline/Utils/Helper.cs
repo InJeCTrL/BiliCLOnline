@@ -26,7 +26,6 @@ namespace BiliCLOnline.Utils
         public Helper(ILogger<Helper> _logger, WebHelper _webHelper)
         {
             logger = _logger;
-
             webHelper = _webHelper;
         }
 
@@ -178,29 +177,6 @@ namespace BiliCLOnline.Utils
             }
 
             return Tuple.Create(true, (DetailData)apiReturn.data);
-        }
-
-        /// <summary>
-        /// 获取随机抽选结果列表
-        /// </summary>
-        /// <param name="total">数据总量</param>
-        /// <param name="cnt">抽选个数</param>
-        /// <returns>抽取的下标列表</returns>
-        public List<int> GetRandomIdxList(int total, int cnt)
-        {
-            var idxList = Enumerable.Range(0, total).ToArray();
-
-            var randIdxList = new List<int>();
-
-            for (int rb = total; rb > total - cnt; --rb)
-            {
-                var pRandom = Random.Shared.Next(0, rb);
-
-                randIdxList.Add(idxList[pRandom]);
-                idxList[pRandom] = idxList[rb - 1];
-            }
-
-            return randIdxList;
         }
 
         /// <summary>

@@ -123,6 +123,11 @@ namespace BiliCLOnline.Models
             {
                 public string uname { get; set; }
                 public string avatar { get; set; }
+                public class LevelInfo
+                {
+                    public int current_level { get; set; }
+                }
+                public LevelInfo level_info { get; set; }
             }
             public Member member { get; set; }
             public class Content
@@ -131,6 +136,7 @@ namespace BiliCLOnline.Models
             }
             public Content content { get; set; }
             public int like { get; set; }
+
         }
         public List<Reply> replies { get; set; }
         public class Page

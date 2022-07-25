@@ -18,5 +18,9 @@
         /// 用户主页URL
         /// </summary>
         public string UserHomeURL { get; set; }
+        /// <summary>
+        /// 用户等级
+        /// </summary>
+        public int Level { get; set; }
     }
 }
