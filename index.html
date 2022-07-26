@@ -377,7 +377,7 @@
 				});
 				
 				$("#fetch").click(function(){
-					$("#fetch_container").remove();
+					$("#fetch_container").hide();
 
 					layer.msg("请耐心等待，不要刷新或返回");
 					$.ajax({
@@ -386,6 +386,7 @@
                         headers: { "h-captcha-response": $("#captcha2")[0].children[0].attributes["data-hcaptcha-response"].nodeValue },
 						crossDomain: true,
 						success: function(data){
+							$("#fetch_container").remove();
 							if (data["code"] != 0){
 								layer.msg(data["message"]);
 							}
@@ -409,6 +410,7 @@
 							}
 						},
 						error: function(j, e){
+							$("#fetch_container").show();
 							if (j.status == 400){
 								layer.msg("参数错误");
 							}
