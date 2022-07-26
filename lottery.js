@@ -5,7 +5,7 @@ self.onmessage = function (event) {
 	let filtered = [];
 	let uidSet = new Set();
 	
-	for (let i = 0; i < data.length; ++i) {
+	for (let i = 0; i < data.data.length; ++i) {
 		if (data.onlySpecified && data.data[i].content.contains(data.contentSpecified)){
 			continue;
 		}
