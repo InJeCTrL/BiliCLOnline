@@ -163,7 +163,7 @@
 											<div id="fetch_container">
 												<div id="captcha2" style="text-align:center" class="h-captcha" data-sitekey="94bcabb4-f991-44ab-8dde-3b7b9fc40849"></div>
 												<div>
-													<button id="fetch" type="button" class="layui-btn layui-bg-red layui-btn-lg layui-btn-radius layui-btn-fluid">获取评论</button>
+													<button id="fetch" type="button" class="layui-btn layui-btn-normal layui-btn-lg layui-btn-radius layui-btn-fluid">获取评论</button>
 												</div>
 												<div style="margin-top: 15px;">
 													提示：不会获取评论区中的楼中楼！
@@ -300,8 +300,8 @@
 				});
 				
 				$("#allopen").click(function(){
-					var opens = document.getElementsByClassName("open");
-					for (var i = 0; i < opens.length; i++) {
+					let opens = document.getElementsByClassName("open");
+					for (let i = 0; i < opens.length; i++) {
 						opens[i].click();
 					}
 				});
@@ -457,6 +457,7 @@
 					    let data = event.data;
 						
 						$('#lottery').removeClass("layui-btn-disabled").attr("disabled", false);
+						layer.msg("已生成中奖列表");
 						
 						table.render({
 							elem: '#luckylist',
@@ -475,6 +476,15 @@
 							]],
 							data: data["data"],
 							limit: data["count"]
+						});
+						table.on('tool(luckylist)', function(obj){
+							switch (obj.event){
+								case 'open':
+									obj.tr[0].firstChild.setAttribute('style', 'cursor: pointer;');
+									break;
+								default:
+									break;
+							}
 						});
 						element.tabChange('tabs', 'third');
 					};
