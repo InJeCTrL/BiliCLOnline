@@ -395,11 +395,16 @@
 								table.render({
 									elem: '#replylist',
 									cols: [[
-										{field: 'uID', title: "UID"},
-										{field: 'uName', title: "用户名"},
 										{
+											title: "用户",
 											templet: function(d){
-												return '评论内容节选: <a href="' + d.url + '" target="_blank">' + d.content.substring(0, 30) + '</a>';
+												return ': <a href="' + d.userHomeURL + '" target="_blank">' + d.uName + ' [' + d.uid + ']</a>';
+											}
+										},
+										{
+											title: "评论内容节选",
+											templet: function(d){
+												return ': <a href="' + d.url + '" target="_blank">' + d.content.substring(0, 30) + '</a>';
 											}
 										}
 									]],
