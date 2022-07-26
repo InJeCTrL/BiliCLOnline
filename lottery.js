@@ -15,7 +15,7 @@ self.onmessage = function (event) {
 			continue;
 		}
 		
-		if (data.duplicatedUID){
+		if (!data.duplicatedUID){
 			if (uidSet.has(data.data[i].uID)){
 				continue;
 			}
