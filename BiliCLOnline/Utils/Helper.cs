@@ -309,6 +309,6 @@ namespace BiliCLOnline.Utils
         /// </summary>
         /// <param name="timestamp">时间戳</param>
         /// <returns>DateTime</returns>
-        public DateTime TimeTrans(long timestamp) => new DateTime(1970, 1, 1, 8, 0, 0, DateTimeKind.Utc).AddSeconds(timestamp);
+        public DateTime TimeTrans(long timestamp) => new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(timestamp);
     }
 }
