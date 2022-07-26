@@ -259,8 +259,8 @@
 		<script type="text/javascript">
 			var Id = "";
 			var replyData = [];
-			var startDateTime = new Date();
-			var endDateTime = new Date();
+			var startDateTime;
+			var endDateTime;
 
 			layui.use(['layer', 'element', 'form', 'layedit', 'laydate', 'table'], function(){
 				var layer = layui.layer
@@ -290,8 +290,8 @@
 					,type: 'datetime'
   					,range: true
 					,done: function (value, start, end) {
-						startDateTime = start;
-						endDateTime = end;
+						startDateTime = new Date((Date)(start));
+						endDateTime = new Date((Date)(end));
 					}
 				});
 
