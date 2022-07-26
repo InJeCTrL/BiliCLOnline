@@ -339,7 +339,7 @@
 										$("#authorhomepage").attr("href", bearer["userHomeURL"]);
 										$("#collect").val(bearer["collectCount"]);
 										$("#coin").val(bearer["coinCount"]);
-										$("#pubtime").val(NiceTime(bearer["pubTime"]));
+										$("#pubtime").val(new Date(bearer["pubTime"]).toLocaleString());
 										element.tabChange('tabs', 'second');
 										break;
 									case 1:
