@@ -24,7 +24,7 @@ self.onmessage = function (event) {
 			}
 		}
 		
-		filtered.append(data.data[i]);
+		filtered.add(data.data[i]);
 	}
 	
 	if (filtered.length < data.count){
