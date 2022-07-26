@@ -35,7 +35,7 @@ self.onmessage = function (event) {
 	
 	for (let i = filtered.length; i > filtered.length - data.count; --i){
 		let rnd = Math.floor(Math.random() * i);
-		result.data.append(filtered[rnd]);
+		result.data.add(filtered[rnd]);
 		filtered[rnd] = filtered[i];
 	}
 	
