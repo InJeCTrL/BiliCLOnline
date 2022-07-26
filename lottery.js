@@ -16,11 +16,11 @@ self.onmessage = function (event) {
 		}
 		
 		if (!data.duplicatedUID){
-			if (uidSet.has(data.data[i].uID)){
+			if (uidSet.has(data.data[i].uid)){
 				continue;
 			}
 			else{
-				uidSet.add(data.data[i].uID);
+				uidSet.add(data.data[i].uid);
 			}
 		}
 		
