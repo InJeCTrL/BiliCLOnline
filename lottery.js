@@ -28,7 +28,7 @@ self.onmessage = function (event) {
 	}
 	
 	if (filtered.length < data.count){
-		throw {"message": "符合条件的评论少于中奖人数"};
+		throw "符合条件的评论少于中奖人数";
 	}
 	
 	result.count = data.count;
