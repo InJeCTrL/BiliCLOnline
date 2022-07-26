@@ -151,6 +151,9 @@ namespace BiliCLOnline.Services
             fillTaskList.Clear();
             fillTaskList = null;
 
+            logger.LogInformation(message: "ReplyResult Succ",
+                                args: new object[] { formalId, replyCount });
+
             return Tuple.Create("", concurrentTotalList.ToList());
         }
     }
