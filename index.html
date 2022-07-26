@@ -290,8 +290,8 @@
 					,type: 'datetime'
   					,range: true
 					,done: function (value, start, end) {
-						startDateTime = new Date((Date)(start));
-						endDateTime = new Date((Date)(end));
+						startDateTime = new Date(start.year, start.month, start.date, start.hours, start.minutes, start.seconds);
+						endDateTime = new Date(end.year, end.month, end.date, end.hours, end.minutes, end.seconds);
 					}
 				});
 
