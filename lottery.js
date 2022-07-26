@@ -30,6 +30,7 @@ self.onmessage = function (event) {
 	if (filtered.length < data.count){
 		result.err = true;
 		result.msg = "符合条件的评论少于中奖人数";
+		this.postMessage(result);
 	}
 	
 	result.count = data.count;
