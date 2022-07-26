@@ -385,11 +385,12 @@
                         headers: { "h-captcha-response": $("#captcha2")[0].children[0].attributes["data-hcaptcha-response"].nodeValue },
 						crossDomain: true,
 						success: function(data){
-							$("#fetch_container").remove();
 							if (data["code"] != 0){
+								$("#fetch_container").show();
 								layer.msg(data["message"]);
 							}
 							else{
+								$("#fetch_container").remove();
 								replyData = data["data"];
 								table.render({
 									elem: '#replylist',
@@ -414,7 +415,6 @@
 							}
 						},
 						error: function(j, e){
-							$("#fetch_container").show();
 							if (j.status == 400){
 								layer.msg("参数错误");
 							}
