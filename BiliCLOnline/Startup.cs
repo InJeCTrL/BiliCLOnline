@@ -28,7 +28,7 @@ namespace BiliCLOnline
             services.AddSingleton<WebHelper>();
             services.AddSingleton<Helper>();
             services.AddScoped<IBearerInfo, BearerInfo>();
-            services.AddScoped<ILotteryResult, LotteryResult>();
+            services.AddScoped<IReplyResult, ReplyResult>();
 
             services.AddSwaggerGen(c =>
             {

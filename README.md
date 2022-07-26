@@ -56,6 +56,10 @@
 
 ## 更新与其它说明
 
+2022-07-21更新：
+
+1. IPRatelimit改为hcaptcha校验
+
 2022-07-17更新：
 
 1. 抽奖方式重新改回全量抽奖，同时规定稿件评论数上限阈值（40000）
@@ -100,12 +104,15 @@
 
 - 后端WebAPI: DotNet 6.0
 - 前端UI: LayUI 2.5.7
+- 代理API：ScrapingAnt
+- 验证码：HCaptcha
 
 ## 后端部署
 
 ```shell
 docker pull injectrl/biliclonline:latest
-docker run -d -it --name {name} -p IP:Port:5000 -e corsTarget={Front-end Domain} -e SAKey={ScrapingAnt Key} injectrl/biliclonline:latest
+修改appsettings中credentials
+docker run -d -it --name {name} -p IP:Port:5000 injectrl/biliclonline:latest
 ```
 
 ## 目前服务器端
