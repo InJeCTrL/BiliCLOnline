@@ -6,12 +6,12 @@ self.onmessage = function (event) {
 	let uidSet = new Set();
 	
 	for (let i = 0; i < data.data.length; ++i) {
-		if (data.onlySpecified && data.data[i].content.contains(data.contentSpecified)){
+		if (data.onlySpecified && !data.data[i].content.contains(data.contentSpecified)){
 			continue;
 		}
 		
 		let pubTime = new Date(data.data[i].pubTime);
-		if (data.limitTime && pubTime >= data.startDateTime && pubTime <= data.endDateTime){
+		if (data.limitTime && (pubTime < data.startDateTime || pubTime > data.endDateTime)){
 			continue;
 		}
 		
