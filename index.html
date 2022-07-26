@@ -454,44 +454,42 @@
 					$('#lottery').addClass("layui-btn-disabled").attr("disabled", true);
 					
 					worker.onmessage=function(event){
+						$('#lottery').removeClass("layui-btn-disabled").attr("disabled", false);
+						
 					    let data = event.data;
-						
-						$('#lottery').removeClass("layui-btn-disabled").attr("disabled", false);
-						layer.msg("已生成中奖列表");
-						
-						table.render({
-							elem: '#luckylist',
-							cols: [[
-								{
-									field: 'faceURL', title: '明细', style:'visibility: hidden;',
-									templet: function(d){
-										return '<div><a href="' + d.userHomeURL + '" target="_blank"><img src="' + d.faceURL + 
-										'" width=50 height=50></a><br>' + d.uName + '</div><br>评论内容节选: <a href="' + d.url + '" target="_blank">' + 
-										d.content.substring(0, 30) + '</a><br>获赞数: ' + d.likeCount + '<br>时间: ' + new Date(d.pubTime).toLocaleString();
-										},
-								},
-								{
-									width: 100, align:'center', title: '操作', toolbar: '#tools'
+						if (data.err === true){
+							layer.msg(data.msg);
+						} else {
+							layer.msg("已生成中奖列表");
+							table.render({
+								elem: '#luckylist',
+								cols: [[
+									{
+										field: 'faceURL', title: '明细', style:'visibility: hidden;',
+										templet: function(d){
+											return '<div><a href="' + d.userHomeURL + '" target="_blank"><img src="' + d.faceURL + 
+											'" width=50 height=50></a><br>' + d.uName + '</div><br>评论内容节选: <a href="' + d.url + '" target="_blank">' + 
+											d.content.substring(0, 30) + '</a><br>获赞数: ' + d.likeCount + '<br>时间: ' + new Date(d.pubTime).toLocaleString();
+											},
+									},
+									{
+										width: 100, align:'center', title: '操作', toolbar: '#tools'
+									}
+								]],
+								data: data["data"],
+								limit: data["count"]
+							});
+							table.on('tool(luckylist)', function(obj){
+								switch (obj.event){
+									case 'open':
+										obj.tr[0].firstChild.setAttribute('style', 'cursor: pointer;');
+										break;
+									default:
+										break;
 								}
-							]],
-							data: data["data"],
-							limit: data["count"]
-						});
-						table.on('tool(luckylist)', function(obj){
-							switch (obj.event){
-								case 'open':
-									obj.tr[0].firstChild.setAttribute('style', 'cursor: pointer;');
-									break;
-								default:
-									break;
-							}
-						});
-						element.tabChange('tabs', 'third');
-					};
-					
-					worker.onerror=function(event){
-						layer.msg(event.message);
-						$('#lottery').removeClass("layui-btn-disabled").attr("disabled", false);
+							});
+							element.tabChange('tabs', 'third');
+						}
 					};
 				});
 			});

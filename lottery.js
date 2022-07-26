@@ -1,6 +1,6 @@
 self.onmessage = function (event) {
     let data = event.data;
-    let result = {"data": [], "count": 0};
+    let result = {"data": [], "count": 0, "err": false, "msg": ""};
 	
 	let filtered = [];
 	let uidSet = new Set();
@@ -28,7 +28,8 @@ self.onmessage = function (event) {
 	}
 	
 	if (filtered.length < data.count){
-		throw RangeError("符合条件的评论少于中奖人数");
+		result.err = true;
+		result.msg = "符合条件的评论少于中奖人数";
 	}
 	
 	result.count = data.count;
