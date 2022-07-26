@@ -259,8 +259,8 @@
 		<script type="text/javascript">
 			var Id = "";
 			var replyData = [];
-			var startDateTime;
-			var endDateTime;
+			var startDateTime = new Date();
+			var endDateTime = new Date();
 
 			layui.use(['layer', 'element', 'form', 'layedit', 'laydate', 'table'], function(){
 				var layer = layui.layer
@@ -434,7 +434,8 @@
 						return;
 					}
 					
-					if ($("#limittime").is(':checked') && startDateTime < endDateTime){
+					if ($("#limittime").is(':checked') &&
+					(startDateTime > endDateTime || typeof(startDateTime) === 'undefined' || typeof(endDateTime) === 'undefined')){
 						layer.msg("截止时间不正确");
 						return;
 					}
