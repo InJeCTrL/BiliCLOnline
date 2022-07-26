@@ -290,8 +290,8 @@
 					,type: 'datetime'
   					,range: true
 					,done: function (value, start, end) {
-						startDateTime = new Date(start.year, start.month, start.date, start.hours, start.minutes, start.seconds);
-						endDateTime = new Date(end.year, end.month, end.date, end.hours, end.minutes, end.seconds);
+						startDateTime = new Date(start.year, start.month - 1, start.date, start.hours, start.minutes, start.seconds);
+						endDateTime = new Date(end.year, end.month - 1, end.date, end.hours, end.minutes, end.seconds);
 					}
 				});
 
@@ -435,8 +435,9 @@
 					}
 					
 					if ($("#limittime").is(':checked') &&
-					(startDateTime > endDateTime || typeof(startDateTime) === 'undefined' || typeof(endDateTime) === 'undefined')){
-						layer.msg("截止时间不正确");
+					(startDateTime > endDateTime || typeof(startDateTime) === 'undefined' || typeof(endDateTime) === 'undefined' ||
+					startDateTime.toString() === 'Invalid Date' || endDateTime.toString() === 'Invalid Date')){
+						layer.msg("起止时间不正确");
 						return;
 					}
 					
