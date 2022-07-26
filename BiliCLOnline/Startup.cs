@@ -71,7 +71,7 @@ namespace BiliCLOnline
             }
             app.UseCors("cors");
 
-            // app.UseMiddleware<HCaptchaVerifyingMiddleware>();
+            app.UseMiddleware<HCaptchaVerifyingMiddleware>();
 
             app.UseRouting();
 
