@@ -3,7 +3,7 @@ self.onmessage = function (event) {
     let result = {"data": [], "count": 0};
 	
 	let filtered = [];
-	let uidSet = Set();
+	let uidSet = new Set();
 	
 	for (let i = 0; i < data.length; ++i) {
 		if (data.onlySpecified && data.data[i].content.contains(data.contentSpecified)){
