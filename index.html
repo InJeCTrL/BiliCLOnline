@@ -189,6 +189,21 @@
 													</div>
 												</div>
 											</div>
+											<hr />
+											<div class="layui-form-item" pane>
+												<label class="layui-form-label">筛选等级</label>
+												<div class="layui-input-block">
+													<input type="checkbox" name="level" title="Lv0" value="0">
+													<input type="checkbox" name="level" title="Lv1" value="1" checked>
+													<input type="checkbox" name="level" title="Lv2" value="2" checked>
+													<input type="checkbox" name="level" title="Lv3" value="3" checked>
+													<input type="checkbox" name="level" title="Lv4" value="4" checked>
+													<input type="checkbox" name="level" title="Lv5" value="5" checked>
+													<input type="checkbox" name="level" title="Lv6" value="6" checked>
+												</div>
+											</div>
+											<div>* 0级用户为抽奖号的风险较大，默认不会抽取</div>
+											<hr />
 											<div class="layui-form-item">
 												<div class="layui-inline">
 													<label class="layui-form-label" style="width: 130px">限制评论时间</label>
@@ -197,14 +212,13 @@
 													</div>
 												</div>
 											</div>
-											
 											<div class="layui-form-item">
 												<label class="layui-form-label">时间范围</label>
 												<div class="layui-input-block">
 													<input type="text" id="timerange" class="layui-input" placeholder="点击选择">
 												</div>
 											</div>
-											
+											<hr />
 											<div class="layui-form-item">
 												<div class="layui-inline">
 													<label class="layui-form-label" style="width: 130px">允许重复UID</label>
@@ -213,6 +227,7 @@
 													</div>
 												</div>
 											</div>
+											<hr />
 											<div class="layui-form-item">
 												<div class="layui-inline">
 													<label class="layui-form-label" style="width: 220px">仅筛选包含特定关键词的评论</label>
@@ -227,6 +242,7 @@
 													<input type="text" class="layui-input" id="contentspecified">
 												</div>
 											</div>
+											<hr />
 											<div>
 												<button id="lottery" type="button" class="layui-btn layui-bg-red layui-btn-lg layui-btn-radius layui-btn-fluid">抽奖</button>
 											</div>
@@ -441,8 +457,13 @@
 						return;
 					}
 					
+					let levelSet = new Set();
+					$('input[name=level]:checked').each(function() {
+						levelSet.add(parseInt($(this).val()));
+					});
+					
 					let lotteryData = {
-						data: replyData, count: cnt, limitTime: $("#limittime").is(':checked'),
+						data: replyData, count: cnt, limitTime: $("#limittime").is(':checked'), levels: levelSet,
 						startDateTime: startDateTime, endDateTime: endDateTime,
 						duplicatedUID: $("#duplicateduid").is(':checked'),
 						onlySpecified: $("#onlyspecified").is(':checked'), contentSpecified: $("#contentspecified").val()

@@ -15,6 +15,10 @@ self.onmessage = function (event) {
 			continue;
 		}
 		
+		if (!data.levels.has(data.data[i].level)){
+			continue;
+		}
+		
 		if (!data.duplicatedUID){
 			if (uidSet.has(data.data[i].uid)){
 				continue;
