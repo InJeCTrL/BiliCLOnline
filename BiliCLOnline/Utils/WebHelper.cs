@@ -23,7 +23,7 @@ namespace BiliCLOnline.Utils
         /// </summary>
         private readonly HttpClient BiliRequestLocalClient = new()
         {
-            Timeout = TimeSpan.FromSeconds(60)
+            Timeout = TimeSpan.FromSeconds(10)
         };
 
         /// <summary>

@@ -103,14 +103,20 @@ namespace BiliCLOnline.Services
                 return Tuple.Create("评论数大于4万, 暂不支持抽奖", new List<Reply>());
             }
 
-            var fillTaskList = new List<Task>();
 
             // 评论页数
             int pageCnt = (int)Math.Ceiling(replyCount / 49.0);
-            for (int i = 1; i <= pageCnt; ++i)
+            // 40页为一批次
+            int batchCnt = 40;
+            for (int i = 1; i <= pageCnt; i += batchCnt)
             {
-                var idxPage = i;
-                fillTaskList.Add(Task.Run(async () =>
+                var fillTaskList = new List<Task>();
+
+                for (int j = i; j < i + batchCnt && j <= pageCnt; ++j)
+                {
+                    var idxPage = j;
+
+                    fillTaskList.Add(Task.Run(async () =>
                 {
                     var replyAPIReturn = await webHelper.GetResponse<ReplyData>($"{ replyAPIURLPrefix }{ idxPage }");
 
@@ -143,13 +149,11 @@ namespace BiliCLOnline.Services
                         }
                     }
                 }));
+                }
+
+                // 等待所有页取完
+                await Task.WhenAll(fillTaskList);
             }
-
-            // 等待所有页取完
-            await Task.WhenAll(fillTaskList);
-
-            fillTaskList.Clear();
-            fillTaskList = null;
 
             logger.LogInformation(message: $"ReplyResult Succ: {formalId}",
                                 args: new object[] { formalId, replyCount });
