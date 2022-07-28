@@ -372,7 +372,7 @@
 										$("#titleContainer").css("display", "none");
 										$("#face").attr("src", bearer["faceURL"]);
 										$("#authorhomepage").attr("href", bearer["userHomeURL"]);
-										$("#pubtime").val(NiceTime(bearer["pubTime"]));
+										$("#pubtime").val(new Date(bearer["pubTime"]).toLocaleString());
 										$("#viewContainer").css("display", "none");
 										$("#collectContainer").css("display", "none");
 										$("#coinContainer").css("display", "none");
