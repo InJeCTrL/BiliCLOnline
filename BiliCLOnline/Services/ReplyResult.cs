@@ -30,8 +30,7 @@ namespace BiliCLOnline.Services
             #region 验证formalId有效并且符合语法
             if (!helper.CheckIdSyntax(formalId))
             {
-                logger.LogWarning(message: "Invalid work",
-                                args: new object[] { formalId });
+                logger.LogWarning(message: $"Invalid work {formalId}");
 
                 return Tuple.Create("作品ID格式错误", new List<Reply>());
             }
@@ -42,8 +41,7 @@ namespace BiliCLOnline.Services
             #region 验证评论承载者类型是否合法
             if (workBasics.Item1 == BearerType.Error)
             {
-                logger.LogWarning(message: "Invalid Bearer type",
-                                args: new object[] { formalId });
+                logger.LogWarning(message: $"Invalid Bearer type id: [{formalId}]");
 
                 return Tuple.Create("不支持的评论承载者类型", new List<Reply>());
             }
@@ -54,8 +52,7 @@ namespace BiliCLOnline.Services
             #region 验证详细信息接口是否合法
             if (string.IsNullOrEmpty(detailAPI))
             {
-                logger.LogWarning(message: "Invalid detailAPI",
-                                args: new object[] { formalId, detailAPI });
+                logger.LogWarning(message: $"Invalid detailAPI id: [{formalId}] api: [{detailAPI}]");
 
                 return Tuple.Create("不合法的详细信息接口", new List<Reply>());
             }
@@ -73,8 +70,7 @@ namespace BiliCLOnline.Services
             #region 验证是否有效作品
             if (!validDetail.Item1)
             {
-                logger.LogWarning(message: "Invalid work",
-                                args: new object[] { formalId });
+                logger.LogWarning(message: $"Invalid work id: [{formalId}]");
 
                 Tuple.Create("无效的作品ID", Enumerable.Empty<Reply>());
             }
@@ -97,20 +93,25 @@ namespace BiliCLOnline.Services
 
             if (replyCount > 40000)
             {
-                logger.LogWarning(message: "Unsupported work",
-                                args: new object[] { formalId, replyCount });
+                logger.LogWarning(message: $"Unsupported work id: [{formalId}]");
 
                 return Tuple.Create("评论数大于4万, 暂不支持抽奖", new List<Reply>());
             }
 
-            var fillTaskList = new List<Task>();
 
             // 评论页数
             int pageCnt = (int)Math.Ceiling(replyCount / 49.0);
-            for (int i = 1; i <= pageCnt; ++i)
+            // 40页为一批次
+            int batchCnt = 40;
+            for (int i = 1; i <= pageCnt; i += batchCnt)
             {
-                var idxPage = i;
-                fillTaskList.Add(Task.Run(async () =>
+                var fillTaskList = new List<Task>();
+
+                for (int j = i; j < i + batchCnt && j <= pageCnt; ++j)
+                {
+                    var idxPage = j;
+
+                    fillTaskList.Add(Task.Run(async () =>
                 {
                     var replyAPIReturn = await webHelper.GetResponse<ReplyData>($"{ replyAPIURLPrefix }{ idxPage }");
 
@@ -143,15 +144,13 @@ namespace BiliCLOnline.Services
                         }
                     }
                 }));
+                }
+
+                // 等待所有页取完
+                await Task.WhenAll(fillTaskList);
             }
 
-            // 等待所有页取完
-            await Task.WhenAll(fillTaskList);
-
-            fillTaskList.Clear();
-            fillTaskList = null;
-
-            logger.LogInformation(message: "ReplyResult Succ",
+            logger.LogInformation(message: $"ReplyResult Succ: {formalId}",
                                 args: new object[] { formalId, replyCount });
 
             return Tuple.Create("", concurrentTotalList.ToList());

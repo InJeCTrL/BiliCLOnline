@@ -23,7 +23,7 @@ namespace BiliCLOnline.Utils
         /// </summary>
         private readonly HttpClient BiliRequestLocalClient = new()
         {
-            Timeout = TimeSpan.FromSeconds(60)
+            Timeout = TimeSpan.FromSeconds(10)
         };
 
         /// <summary>
@@ -79,8 +79,7 @@ namespace BiliCLOnline.Utils
             }
             catch (Exception ex) when (ex is HttpRequestException || ex is JsonException)
             {
-                logger.LogError(message: ex.ToString(),
-                                args: new object[] { token, secret });
+                logger.LogError(message: ex.ToString());
             }
 
             return false;
@@ -120,8 +119,7 @@ namespace BiliCLOnline.Utils
                 }
                 catch (Exception ex) when (ex is HttpRequestException || ex is JsonException || ex is TaskCanceledException)
                 {
-                    logger.LogError(message: ex.ToString(),
-                                    args: new object[] { URL });
+                    logger.LogError(message: $"Exception: [{ex}] url: [{URL}]");
                 }
 
                 if (localSucc)
@@ -159,14 +157,12 @@ namespace BiliCLOnline.Utils
             }
             catch (HttpRequestException ex)
             {
-                logger.LogError(message: ex.ToString(),
-                                args: new object[] { URL });
+                logger.LogError(message: $"Exception: [{ex}] url: [{URL}]");
                 throw;
             }
             catch (JsonException ex)
             {
-                logger.LogError(message: ex.ToString(),
-                                args: new object[] { URL, responseWrapper.content });
+                logger.LogError(message: $"Exception: [{ex}] url: [{URL}] content: [{responseWrapper.content}]");
                 throw;
             }
 
@@ -197,8 +193,7 @@ namespace BiliCLOnline.Utils
             }
             catch (HttpRequestException ex)
             {
-                logger.LogError(message: ex.ToString(),
-                                args: new object[] { URL });
+                logger.LogError(message: $"Exception: [{ex}] url: [{URL}]");
                 throw;
             }
 
