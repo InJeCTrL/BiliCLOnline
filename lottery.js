@@ -1,4 +1,4 @@
-self.onmessage = function (event) {
+﻿self.onmessage = function (event) {
     let data = event.data;
     let result = {"data": [], "count": 0, "err": false, "msg": ""};
 	
@@ -6,7 +6,7 @@ self.onmessage = function (event) {
 	let uidSet = new Set();
 	
 	for (let i = 0; i < data.data.length; ++i) {
-		if (data.onlySpecified && !data.data[i].content.contains(data.contentSpecified)){
+		if (data.onlySpecified && !data.data[i].content.includes(data.contentSpecified)){
 			continue;
 		}
 		
