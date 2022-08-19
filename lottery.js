@@ -1,11 +1,26 @@
-﻿self.onmessage = function (event) {
+self.onmessage = function (event) {
     let data = event.data;
     let result = {"data": [], "count": 0, "err": false, "msg": ""};
 	
 	let filtered = [];
 	let uidSet = new Set();
 	
+	let replySet = new Set();
+	if (data.deDuplicatedReply){
+		data.data.sort(function(x, y){
+			return x.pubTime - y.pubTime;
+		});
+	}
+	
 	for (let i = 0; i < data.data.length; ++i) {
+		if (data.deDuplicatedReply){
+			if (replySet.has(data.data[i].content)){
+				continue;
+			} else {
+				replySet.add(data.data[i].content);
+			}
+		}
+		
 		if (data.onlySpecified && !data.data[i].content.includes(data.contentSpecified)){
 			continue;
 		}
@@ -22,8 +37,7 @@
 		if (!data.duplicatedUID){
 			if (uidSet.has(data.data[i].uid)){
 				continue;
-			}
-			else{
+			} else {
 				uidSet.add(data.data[i].uid);
 			}
 		}
