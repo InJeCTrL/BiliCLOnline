@@ -56,7 +56,7 @@ self.onmessage = function (event) {
 	for (let i = filtered.length; i > filtered.length - data.count; --i){
 		let rnd = Math.floor(Math.random() * i);
 		result.data.push(filtered[rnd]);
-		filtered[rnd] = filtered[i];
+		filtered[rnd] = filtered[i - 1];
 	}
 	
     this.postMessage(result);
