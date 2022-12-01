@@ -7,7 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
-using System;
+using StackExchange.Redis;
 
 namespace BiliCLOnline
 {
@@ -24,6 +24,9 @@ namespace BiliCLOnline
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton(Configuration);
+
+            ConnectionMultiplexer redisConn = ConnectionMultiplexer.Connect(Configuration.GetValue<string>("RedisConn"));
+            services.AddSingleton<IConnectionMultiplexer>(redisConn);
 
             services.AddSingleton<WebHelper>();
             services.AddSingleton<Helper>();
@@ -72,6 +75,7 @@ namespace BiliCLOnline
             app.UseCors("cors");
 
             app.UseMiddleware<HCaptchaVerifyingMiddleware>();
+            app.UseMiddleware<RatelimitMiddleware>();
 
             app.UseRouting();
 

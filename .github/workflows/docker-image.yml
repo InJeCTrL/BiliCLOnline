@@ -30,6 +30,7 @@ jobs:
             CorsTarget: ${{ secrets.CORSTARGET }}
             SAKey: ${{ secrets.SAKEY }}
             HCaptchaSecret: ${{ secrets.HCAPTCHASECRET }}
+            RedisConn: ${{ secrets.REDISCONN }}
       -
           name: Login to Docker Hub
           uses: docker/login-action@v2

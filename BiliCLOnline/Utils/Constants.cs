@@ -23,6 +23,15 @@
         public const string HCaptchaVerifyURL =
             "https://hcaptcha.com/siteverify";
 
+        public const string ReplyRoutePath =
+            "/api/Reply/";
+
+        public const int IPLimitPeriod = 5;
+        public const int IPLimitCount = 3;
+
+        public const int IPIDLimitPeriod = 3;
+        public const int IPIDLimitCount = 1;
+
         public static class BearerDetailAPITemplate
         {
             public const string AID = "http://api.bilibili.com/x/web-interface/view/detail?aid={0}";
