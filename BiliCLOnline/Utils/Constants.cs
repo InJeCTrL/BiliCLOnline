@@ -26,7 +26,7 @@
         public const string ReplyRoutePath =
             "/api/Reply/";
 
-        public const int IPLimitPeriod = 5;
+        public const int IPLimitPeriod = 3;
         public const int IPLimitCount = 3;
 
         public const int IPIDLimitPeriod = 3;

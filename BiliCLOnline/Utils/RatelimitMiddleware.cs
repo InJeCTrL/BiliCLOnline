@@ -62,7 +62,7 @@ namespace BiliCLOnline.Utils
                 else
                 {
                     var incrd = db.HashIncrement(ipId, "cnt");
-                    if (incrd >= IPLimitCount)
+                    if (incrd >= IPIDLimitCount)
                     {
                         exceedLimit = true;
                         logger.LogWarning(message: $"Warning: [IPIDRateLimit] url: [{ipId}]");
