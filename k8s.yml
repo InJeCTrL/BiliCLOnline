@@ -29,3 +29,17 @@ spec:
       schedulerName: default-scheduler
       securityContext: {}
 status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: biliclonline
+  annotations:
+    dev.okteto.com/auto-ingress: "true"
+spec:
+  ports:
+  - port: 5000
+    targetPort: 5000
+  selector:
+    app: biliclonline
+  type: LoadBalancer
