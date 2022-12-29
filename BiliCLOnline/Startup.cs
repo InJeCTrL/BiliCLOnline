@@ -40,10 +40,10 @@ namespace BiliCLOnline
                 option.RequestQueueLimit = 50;
             });
 
-            services.AddCors(options => 
+            services.AddCors(options =>
             {
-                options.AddPolicy("cors", p => 
-                { 
+                options.AddPolicy("cors", p =>
+                {
                     p.WithOrigins(Environment.GetEnvironmentVariable("CorsTarget") ?? "")
                     .AllowAnyHeader()
                     .AllowAnyMethod()

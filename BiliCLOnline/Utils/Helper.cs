@@ -1,11 +1,11 @@
-﻿using BiliCLOnline.Models;
-using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
+using BiliCLOnline.Models;
+using Microsoft.Extensions.Logging;
 using static BiliCLOnline.Utils.Constants;
 
 namespace BiliCLOnline.Utils
@@ -24,7 +24,7 @@ namespace BiliCLOnline.Utils
         private readonly WebHelper webHelper;
 
         // <GUID, <Completed, Status, Replies>>
-        public Dictionary<string, Tuple<bool, string, List<Reply>>> guidReplyResults;
+        public readonly ConcurrentDictionary<string, Tuple<bool, string, List<Reply>>> guidReplyResults;
 
         public Helper(ILogger<Helper> _logger, WebHelper _webHelper)
         {

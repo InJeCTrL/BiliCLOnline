@@ -50,18 +50,17 @@ namespace BiliCLOnline.Services
             #region 任务执行完成, 返回执行结果并移除表中记录
             logger.LogInformation(message: $"Complete task {taskID}");
 
-            var returnRecord = Tuple.Create(
-                true, helper.guidReplyResults[taskID].Item2, helper.guidReplyResults[taskID].Item3);
-            helper.guidReplyResults.Remove(taskID);
+            helper.guidReplyResults.TryRemove(taskID, out var replyResult);
 
-            return await Task.FromResult(returnRecord);
+            return await Task.FromResult(Tuple.Create(
+                true, replyResult.Item2, replyResult.Item3));
             #endregion
         }
 
         public async Task<string> InvokeGetListTask(string formalId)
         {
             var taskGUID = Guid.NewGuid().ToString();
-            helper.guidReplyResults.Add(taskGUID, Tuple.Create(false, "", new List<Reply>()));
+            helper.guidReplyResults[taskGUID] = Tuple.Create(false, "", new List<Reply>());
 
             #region 验证formalId有效并且符合语法
             if (!helper.CheckIdSyntax(formalId))
