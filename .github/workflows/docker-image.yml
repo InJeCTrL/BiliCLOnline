@@ -30,7 +30,7 @@ jobs:
           uses: docker/build-push-action@v2
           with:
             context: .
-            file: ./Dockerfile
+            file: BiliCLOnline/Dockerfile
             push: true
             tags: injectrl/biliclonline:latest
       -
