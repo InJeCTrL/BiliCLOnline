@@ -4,7 +4,7 @@
 
 ## 介绍
 
-本项目是上一年写的WPF应用[BiliCommentLottery](https://github.com/InJeCTrL/BiliCommentLottery)的升级版，尽管当时使用的SDK是DotNet Core 3.1，但由于WPF是Windows操作系统的专用UI框架，无法跨平台，给许多使用者带来些许不便，所以这次重构了老项目，将其由WPF应用改为WEB应用，后端基于DotNet 6.0开发WebAPI，前端界面使用LayUI搭建，这次在诸多平台上都可以使用了！（直接访问这个repo的[github-pages](https://injectrl.github.io/BiliCLOnline/)就可以）
+本项目是上一年写的WPF应用[BiliCommentLottery](https://github.com/InJeCTrL/BiliCommentLottery)的升级版，尽管当时使用的SDK是DotNet Core 3.1，但由于WPF是Windows操作系统的专用UI框架，无法跨平台，给许多使用者带来些许不便，所以这次重构了老项目，将其由WPF应用改为WEB应用，后端基于DotNet Core开发WebAPI，前端界面使用LayUI搭建，这次在诸多平台上都可以使用了！（直接访问这个repo的[github-pages](https://injectrl.github.io/BiliCLOnline/)就可以）
 
 ## 特点
 
@@ -55,6 +55,12 @@
      `https://b23.tv/Qzqqj9`
 
 ## 更新与其它说明
+
+2022-12-29更新：
+
+1. 迁移部署到OKTETO K8s
+2. 单次请求获取评论列表改为一次请求后轮询是否完成获取
+3. 改进批次并发请求为信号量方式
 
 2022-12-01更新：
 
