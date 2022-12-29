@@ -60,4 +60,4 @@ jobs:
           with:
             namespace: ${{ secrets.OKTETO_NAMESPACE }}
             name: biliclonline
-            working-directory: BiliCLOnline/BiliCLOnline
+            working-directory: ./BiliCLOnline
