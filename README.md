@@ -118,7 +118,7 @@
 
 ## 使用技术
 
-- 后端WebAPI: DotNet 6.0
+- 后端WebAPI: DotNet 7.0
 - 前端UI: LayUI 2.5.7
 - 代理API：ScrapingAnt
 - 验证码：HCaptcha
@@ -127,10 +127,9 @@
 
 ```shell
 docker pull injectrl/biliclonline:latest
-修改appsettings中credentials
-docker run -d -it --name {name} -p IP:Port:5000 injectrl/biliclonline:latest
+docker run -d -it --name {name} -p 5000:5000 -e HCaptchaSecret="xxx" -e CorsTarget="xxx" -e SAKeys="xxx" injectrl/biliclonline:latest
 ```
 
 ## 目前服务器端
 
-服务托管到Azure Container Instances
+服务托管到Okteto
