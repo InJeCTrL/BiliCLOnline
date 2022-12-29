@@ -1,3 +1,4 @@
+using System;
 using BiliCLOnline.IServices;
 using BiliCLOnline.Services;
 using BiliCLOnline.Utils;
@@ -7,7 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
-using StackExchange.Redis;
+
 
 namespace BiliCLOnline
 {
@@ -23,11 +24,6 @@ namespace BiliCLOnline
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton(Configuration);
-
-            ConnectionMultiplexer redisConn = ConnectionMultiplexer.Connect(Configuration.GetValue<string>("RedisConn"));
-            services.AddSingleton<IConnectionMultiplexer>(redisConn);
-
             services.AddSingleton<WebHelper>();
             services.AddSingleton<Helper>();
             services.AddScoped<IBearerInfo, BearerInfo>();
@@ -48,7 +44,7 @@ namespace BiliCLOnline
             {
                 options.AddPolicy("cors", p => 
                 { 
-                    p.WithOrigins(Configuration.GetValue<string>("CorsTarget"))
+                    p.WithOrigins(Environment.GetEnvironmentVariable("CorsTarget") ?? "")
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials();
@@ -75,7 +71,6 @@ namespace BiliCLOnline
             app.UseCors("cors");
 
             app.UseMiddleware<HCaptchaVerifyingMiddleware>();
-            // app.UseMiddleware<RatelimitMiddleware>();
 
             app.UseRouting();
 

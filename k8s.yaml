@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: biliclonline
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: biliclonline
+  template:
+    metadata:
+      labels:
+        app: biliclonline
+    spec:
+      containers:
+      - image: injectrl/biliclonline:latest
+        name: biliclonline
+        ports:
+        - containerPort: 5000
+        env:
+        - name: HCaptchaSecret
+          value: $HCaptchaSecret
+        - name: CorsTarget
+          value: $CorsTarget
+        - name: SAKeys
+          value: $SAKeys
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+status: {}

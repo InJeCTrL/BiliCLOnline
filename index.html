@@ -275,7 +275,7 @@
 				</div>
 			</div>
 			<div style="text-align: center;padding-bottom: 10px;">
-				Powered by .NET 6.0 on Docker
+				Running .NET 7.0 on K8s(Okteto)
 			</div>
 		</div>
 		<script type="text/html" id="tools">
@@ -341,7 +341,7 @@
 				$("#set").click(function(){
 					$('#set').addClass("layui-btn-disabled").attr("disabled", true);
 					$.ajax({
-						url: "https://biliclonline.jollymeadow-86e0db09.koreacentral.azurecontainerapps.io/api/Bearer",
+                        url: "https://biliclonline-injectrl.cloud.okteto.net/api/Bearer",
 						type: "get",
                         headers: { "h-captcha-response": $("#captcha1")[0].children[0].attributes["data-hcaptcha-response"].nodeValue },
                         data: { pattern: $("#pattern").val() },
@@ -406,22 +406,18 @@
 						}
 					});
 				});
-				
-				$("#fetch").click(function(){
-					$("#fetch_container").hide();
 
-					layer.msg("请耐心等待，不要刷新或返回");
+				function refreshConfirmation(taskID) {
 					$.ajax({
-						url: "https://biliclonline.jollymeadow-86e0db09.koreacentral.azurecontainerapps.io/api/Reply/" + Id,
+						url: "https://biliclonline-injectrl.cloud.okteto.net/api/Confirmation/" + taskID,
 						type: "get",
-                        headers: { "h-captcha-response": $("#captcha2")[0].children[0].attributes["data-hcaptcha-response"].nodeValue },
 						crossDomain: true,
-						success: function(data){
-							if (data["code"] != 0){
+						success: function (data) {
+							if (data["code"] === 1) {
 								$("#fetch_container").show();
 								layer.msg(data["message"]);
 							}
-							else{
+							else if (data["code"] === 0) {
 								$("#fetch_container").remove();
 								$('#lotterySetting').css('display', 'block');
 								replyData = data["data"];
@@ -431,13 +427,13 @@
 									cols: [[
 										{
 											title: "用户 [UID]",
-											templet: function(d){
+											templet: function (d) {
 												return '<a href="' + d.userHomeURL + '" target="_blank">' + d.uName + ' [' + d.uid + ']</a>';
 											}
 										},
 										{
 											title: "评论内容节选",
-											templet: function(d){
+											templet: function (d) {
 												return '<a href="' + d.url + '" target="_blank">' + d.content.substring(0, 30) + '</a>';
 											}
 										}
@@ -445,6 +441,41 @@
 									page: true,
 									data: data["data"]
 								});
+							}
+							else if (data["code"] === 2) {
+								layer.msg(data["message"]);
+								setTimeout(function () {
+									refreshConfirmation(taskID));}, 5000);
+							}
+                        },
+                        error: function (j, e) {
+                            if (j.status == 400) {
+                                layer.msg("参数错误");
+                            }
+                            else {
+                                layer.msg("服务暂不可用");
+                            }
+                            console.log(e);
+                        },
+                    });
+				}
+				
+				$("#fetch").click(function(){
+					$("#fetch_container").hide();
+
+					layer.msg("请耐心等待，不要刷新或返回");
+					$.ajax({
+                        url: "https://biliclonline-injectrl.cloud.okteto.net/api/Reply/" + Id,
+						type: "get",
+                        headers: { "h-captcha-response": $("#captcha2")[0].children[0].attributes["data-hcaptcha-response"].nodeValue },
+						crossDomain: true,
+						success: function(data){
+							if (data["code"] != 0){
+								$("#fetch_container").show();
+								layer.msg(data["message"]);
+							}
+							else {
+								refreshConfirmation(data["data"]);
 							}
 						},
 						error: function(j, e){

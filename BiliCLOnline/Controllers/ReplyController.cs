@@ -1,7 +1,6 @@
 ﻿using BiliCLOnline.IServices;
 using BiliCLOnline.Utils;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -19,29 +18,41 @@ namespace BiliCLOnline.Controllers
         }
 
         /// <summary>
-        /// 获取评论区列表
+        /// 执行获取评论区列表任务
         /// </summary>
         /// <param name="id">评论承载者标准标识符</param>
         /// <returns></returns>
         [HttpGet("{id}")]
-        public async Task<ActionResult<ResultWrapper>> GetLotteryResult(string id)
+        public async Task<ActionResult<ResultWrapper>> ExecuteFetchReplyResult(string id)
+        {
+            // 执行获取评论列表任务
+            var taskID = await replyResult.InvokeGetListTask(id);
+
+            return new ResultWrapper
+            {
+                Code = 0,
+                Count = 0,
+                Data = taskID,
+                Message = "已执行查询任务，请稍后"
+            };
+        }
+
+        /// <summary>
+        /// 获取评论区列表
+        /// </summary>
+        /// <param name="id">任务ID</param>
+        /// <returns></returns>
+        [HttpGet("/api/Confirmation/{taskID}")]
+        public async Task<ActionResult<ResultWrapper>> GetList(string taskID)
         {
             // 获取评论列表
-            var result = await replyResult.GetList(id);
+            var result = await replyResult.GetList(taskID);
 
-            var replyList = result.Item2;
+            var completed = result.Item1;
+            var statusTip = result.Item2;
+            var replyList = result.Item3;
 
-            if (!replyList.Any())
-            {
-                return new ResultWrapper
-                {
-                    Code = 1,
-                    Count = 0,
-                    Data = null,
-                    Message = result.Item1
-                };
-            }
-            else
+            if (replyList.Any())
             {
                 return new ResultWrapper
                 {
@@ -49,6 +60,26 @@ namespace BiliCLOnline.Controllers
                     Count = replyList.Count,
                     Data = replyList,
                     Message = ""
+                };
+            }
+            else if (completed)
+            {
+                return new ResultWrapper
+                {
+                    Code = 1,
+                    Count = 0,
+                    Data = null,
+                    Message = statusTip
+                };
+            }
+            else
+            {
+                return new ResultWrapper
+                {
+                    Code = 2,
+                    Count = 0,
+                    Data = null,
+                    Message = statusTip
                 };
             }
         }

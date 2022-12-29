@@ -23,10 +23,14 @@ namespace BiliCLOnline.Utils
 
         private readonly WebHelper webHelper;
 
+        // <GUID, <Completed, Status, Replies>>
+        public Dictionary<string, Tuple<bool, string, List<Reply>>> guidReplyResults;
+
         public Helper(ILogger<Helper> _logger, WebHelper _webHelper)
         {
             logger = _logger;
             webHelper = _webHelper;
+            guidReplyResults = new();
         }
 
         /// <summary>
@@ -139,7 +143,7 @@ namespace BiliCLOnline.Utils
                 oid = videoDetail.View.aid.ToString();
             }
 
-            return string.Format(ReplyAPITemplate, oid, workType);
+            return string.Format(ReplyAPITemplate, oid, workType, ReplyPageSize);
         }
 
         /// <summary>

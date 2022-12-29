@@ -1,5 +1,4 @@
 ﻿using BiliCLOnline.Models;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -44,9 +43,9 @@ namespace BiliCLOnline.Utils
 
         private readonly ILogger<WebHelper> logger;
 
-        public WebHelper(IConfiguration config, ILogger<WebHelper> _logger)
+        public WebHelper(ILogger<WebHelper> _logger)
         {
-            BiliRequestClient.DefaultRequestHeaders.Add("x-api-key", config.GetValue<string>("SAKey"));
+            BiliRequestClient.DefaultRequestHeaders.Add("x-api-key", Environment.GetEnvironmentVariable("SAKeys") ?? "");
             logger = _logger;
         }
 

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -16,15 +16,24 @@ namespace BiliCLOnline.Utils
 
         private readonly string secret;
 
-        public HCaptchaVerifyingMiddleware(RequestDelegate _next, WebHelper _webhelper, IConfiguration config, ILogger<HCaptchaVerifyingMiddleware> _logger)
+        public HCaptchaVerifyingMiddleware(RequestDelegate _next, WebHelper _webhelper, ILogger<HCaptchaVerifyingMiddleware> _logger)
         {
             next = _next;
             webHelper = _webhelper;
-            secret = config.GetValue<string>("HCaptchaSecret");
+            secret = Environment.GetEnvironmentVariable("HCaptchaSecret") ?? "";
             logger = _logger;
         }
         public async Task InvokeAsync(HttpContext context)
         {
+            #region 获取任务结果路径无效校验
+            if (context.Request.Path.ToString().StartsWith("/api/Confirmation/"))
+            {
+                await next.Invoke(context);
+                return;
+            }
+            #endregion
+
+            #region 校验验证码
             var hasHCT = context.Request.Headers.TryGetValue("h-captcha-response", out var hCTResponse);
 
             if (hasHCT)
@@ -37,6 +46,7 @@ namespace BiliCLOnline.Utils
                     return;
                 }
             }
+            #endregion
 
             #region 校验不通过
             context.Response.ContentType = "application/json; charset=utf-8";

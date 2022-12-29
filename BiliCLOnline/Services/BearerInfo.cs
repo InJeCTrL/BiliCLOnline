@@ -26,8 +26,7 @@ namespace BiliCLOnline.Services
             #region 验证formalId有效并且符合语法
             if (string.IsNullOrEmpty(formalId) || !helper.CheckIdSyntax(formalId))
             {
-                logger.LogWarning(message: "Wrong formalId",
-                                args: new object[] { formalId, pattern });
+                logger.LogWarning(message: $"Wrong formalId {formalId}, {pattern}");
 
                 return new BearerWrapper
                 {
@@ -42,8 +41,7 @@ namespace BiliCLOnline.Services
             #region 验证评论承载者类型是否合法
             if (workBasics.Item1 == BearerType.Error)
             {
-                logger.LogWarning(message: "Invalid Bearer type",
-                                args: new object[] { formalId });
+                logger.LogWarning(message: $"Invalid Bearer type {formalId}");
 
                 return new BearerWrapper
                 {
@@ -58,8 +56,7 @@ namespace BiliCLOnline.Services
             #region 验证详细信息接口是否合法
             if (string.IsNullOrEmpty(detailAPI))
             {
-                logger.LogWarning(message: "Invalid detailAPI",
-                                args: new object[] { formalId, detailAPI });
+                logger.LogWarning(message: $"Invalid detailAPI {formalId}, {detailAPI}");
 
                 return new BearerWrapper
                 {
@@ -81,8 +78,7 @@ namespace BiliCLOnline.Services
             #region 验证是否有效作品
             if (!validDetail.Item1)
             {
-                logger.LogWarning(message: "Invalid work",
-                                args: new object[] { pattern });
+                logger.LogWarning(message: $"Invalid work {pattern}");
 
                 return new BearerWrapper
                 {

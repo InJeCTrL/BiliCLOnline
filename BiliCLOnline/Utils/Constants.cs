@@ -6,7 +6,7 @@
             "https://api.scrapingant.com/v1/general?return_text=true&url=";
 
         public const string ReplyAPITemplate =
-            "http://api.bilibili.com/x/v2/reply?oid={0}&type={1}&sort=1&ps=49&pn=";
+            "http://api.bilibili.com/x/v2/reply?oid={0}&type={1}&sort=1&ps={2}&pn=";
 
         public const string SpaceURLTemplate =
             "https://space.bilibili.com/{0}";
@@ -26,11 +26,11 @@
         public const string ReplyRoutePath =
             "/api/Reply/";
 
-        public const int IPLimitPeriod = 3;
-        public const int IPLimitCount = 3;
+        public const int MaxReplyLimit = 40000;
 
-        public const int IPIDLimitPeriod = 3;
-        public const int IPIDLimitCount = 1;
+        public const int ReplyPageSize = 49;
+
+        public const int MaxConcurrentFetchLimit = 40;
 
         public static class BearerDetailAPITemplate
         {
