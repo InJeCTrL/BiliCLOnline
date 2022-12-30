@@ -226,7 +226,7 @@ namespace BiliCLOnline.Utils
             #region 根据URL获取rawId
             if (pattern.Contains("http:") || pattern.Contains("https:"))
             {
-                pattern = pattern[..pattern.IndexOf("http")];
+                pattern = pattern[pattern.IndexOf("http")..];
 
                 #region 解析短分享链接为常规URL
                 if (pattern.Contains("b23.tv"))
