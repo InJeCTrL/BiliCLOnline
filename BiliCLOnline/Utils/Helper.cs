@@ -224,8 +224,10 @@ namespace BiliCLOnline.Utils
             string rawId = string.Empty;
 
             #region 根据URL获取rawId
-            if (pattern.StartsWith("http"))
+            if (pattern.Contains("http:") || pattern.Contains("https:"))
             {
+                pattern = pattern[..pattern.IndexOf("http")];
+
                 #region 解析短分享链接为常规URL
                 if (pattern.Contains("b23.tv"))
                 {
