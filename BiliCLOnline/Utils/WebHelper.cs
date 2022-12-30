@@ -41,11 +41,27 @@ namespace BiliCLOnline.Utils
             Timeout = TimeSpan.FromSeconds(5)
         };
 
+        /// <summary>
+        /// ScrapingAnt token列表
+        /// </summary>
+        private readonly string[] SAkeys;
+
+        /// <summary>
+        /// 当前使用的ScrapingAnt token序号
+        /// </summary>
+        private int idxSAkey = 0;
+
+        /// <summary>
+        /// SA序号锁
+        /// </summary>
+        private readonly object mSAidx = new object();
+
         private readonly ILogger<WebHelper> logger;
 
         public WebHelper(ILogger<WebHelper> _logger)
         {
-            BiliRequestClient.DefaultRequestHeaders.Add("x-api-key", Environment.GetEnvironmentVariable("SAKeys") ?? "");
+            SAkeys = (Environment.GetEnvironmentVariable("SAKeys") ?? "").Split(";", StringSplitOptions.RemoveEmptyEntries);
+            BiliRequestClient.DefaultRequestHeaders.Add("x-api-key", SAkeys[0]);
             logger = _logger;
         }
 
@@ -96,55 +112,94 @@ namespace BiliCLOnline.Utils
 
             WebAPIReturn responseWrapper = default;
 
+
+            #region 使用无代理httpclient尝试
+            var localSucc = false;
+
             try
             {
-                #region 使用无代理httpclient尝试
-                var localSucc = false;
+                using var responseMsg = await BiliRequestLocalClient.GetAsync(URL);
+                responseMsg.EnsureSuccessStatusCode();
 
-                try
+                using var responseStream = await responseMsg.Content.ReadAsStreamAsync();
+                responseJSON = await JsonSerializer.DeserializeAsync<BilibiliAPIReturn<T>>(responseStream);
+
+                if (responseJSON.code == 412)
                 {
-                    using var responseMsg = await BiliRequestLocalClient.GetAsync(URL);
-                    responseMsg.EnsureSuccessStatusCode();
-
-                    using var responseStream = await responseMsg.Content.ReadAsStreamAsync();
-                    responseJSON = await JsonSerializer.DeserializeAsync<BilibiliAPIReturn<T>>(responseStream);
-
-                    if (responseJSON.code == 412)
-                    {
-                        throw new HttpRequestException(URL);
-                    }
-
-                    localSucc = true;
-                }
-                catch (Exception ex) when (ex is HttpRequestException || ex is JsonException || ex is TaskCanceledException)
-                {
-                    logger.LogError(message: $"Exception: [{ex}] url: [{URL}]");
+                    throw new HttpRequestException(URL);
                 }
 
-                if (localSucc)
-                {
-                    return responseJSON;
-                }
-                #endregion
+                localSucc = true;
+            }
+            catch (Exception ex) when (ex is HttpRequestException || ex is JsonException || ex is TaskCanceledException)
+            {
+                logger.LogError(message: $"Exception: [{ex}] url: [{URL}]");
+            }
 
+            if (localSucc)
+            {
+                return responseJSON;
+            }
+            #endregion
+
+            try
+            {
                 #region 使用有代理的httpclient
                 URL = $"{Constants.ScrapingAntAPIPrefix}{HttpUtility.UrlEncode(URL)}";
 
+                int currentSAidx = -1;
+                lock (mSAidx)
+                {
+                    currentSAidx = idxSAkey;
+                }
+
                 do
                 {
-                    using var responseMsg = await BiliRequestClient.GetAsync(URL);
-                    responseMsg.EnsureSuccessStatusCode();
-
-                    using var responseStream = await responseMsg.Content.ReadAsStreamAsync();
-                    responseWrapper = await JsonSerializer.DeserializeAsync<WebAPIReturn>(responseStream);
-
                     try
                     {
+                        using var responseMsg = await BiliRequestClient.GetAsync(URL);
+                        responseMsg.EnsureSuccessStatusCode();
+
+                        using var responseStream = await responseMsg.Content.ReadAsStreamAsync();
+                        responseWrapper = await JsonSerializer.DeserializeAsync<WebAPIReturn>(responseStream);
+
                         responseJSON = JsonSerializer.Deserialize<BilibiliAPIReturn<T>>(responseWrapper.content);
                     }
                     catch (JsonException)
                     {
                         continue;
+                    }
+                    catch (HttpRequestException ex)
+                    {
+                        if (ex.StatusCode.Value == HttpStatusCode.Forbidden)
+                        {
+                            logger.LogWarning(message: $"Warning: ScrapingAnt limit exceed [{ex}] url: [{URL}]");
+                            lock (mSAidx)
+                            {
+                                // 其它并发线程已推进了idxSAkey
+                                if (currentSAidx < idxSAkey)
+                                {
+                                    continue;
+                                }
+                                // 此线程应当更换SAkey
+                                else
+                                {
+                                    ++idxSAkey;
+                                    // 超出token列表
+                                    if (idxSAkey >= SAkeys.Length)
+                                    {
+                                        throw;
+                                    }
+
+                                    BiliRequestClient.DefaultRequestHeaders.Remove("x-api-key");
+                                    BiliRequestClient.DefaultRequestHeaders.Add("x-api-key", SAkeys[idxSAkey]);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            throw;
+                        }
                     }
 
                     if (responseJSON.code != 412)
