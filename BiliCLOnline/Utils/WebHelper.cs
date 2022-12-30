@@ -147,14 +147,9 @@ namespace BiliCLOnline.Utils
                 #region 使用有代理的httpclient
                 URL = $"{Constants.ScrapingAntAPIPrefix}{HttpUtility.UrlEncode(URL)}";
 
-                int currentSAidx = -1;
-                lock (mSAidx)
-                {
-                    currentSAidx = idxSAkey;
-                }
-
                 do
                 {
+                    int currentSAidx = idxSAkey;
                     try
                     {
                         using var responseMsg = await BiliRequestClient.GetAsync(URL);
@@ -174,6 +169,11 @@ namespace BiliCLOnline.Utils
                         if (ex.StatusCode.Value == HttpStatusCode.Forbidden)
                         {
                             logger.LogWarning(message: $"Warning: ScrapingAnt limit exceed [{ex}] url: [{URL}]");
+                            // 其它并发线程已推进了idxSAkey
+                            if (currentSAidx < idxSAkey)
+                            {
+                                continue;
+                            }
                             lock (mSAidx)
                             {
                                 // 其它并发线程已推进了idxSAkey
@@ -193,6 +193,7 @@ namespace BiliCLOnline.Utils
 
                                     BiliRequestClient.DefaultRequestHeaders.Remove("x-api-key");
                                     BiliRequestClient.DefaultRequestHeaders.Add("x-api-key", SAkeys[idxSAkey]);
+                                    continue;
                                 }
                             }
                         }
