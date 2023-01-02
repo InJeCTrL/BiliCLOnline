@@ -20,10 +20,7 @@ namespace BiliCLOnline.Utils
         /// <summary>
         /// 用于请求BilibiliAPI的httpclient(无代理)
         /// </summary>
-        private readonly HttpClient BiliRequestLocalClient = new()
-        {
-            Timeout = TimeSpan.FromSeconds(10)
-        };
+        private readonly HttpClient BiliRequestLocalClient = new();
 
         /// <summary>
         /// 用于请求验证码服务的httpclient
