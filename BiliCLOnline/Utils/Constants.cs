@@ -30,7 +30,7 @@
 
         public const int ReplyPageSize = 49;
 
-        public const int MaxConcurrentFetchLimit = 40;
+        public const int MaxConcurrentFetchLimit = 10;
 
         public static class BearerDetailAPITemplate
         {
