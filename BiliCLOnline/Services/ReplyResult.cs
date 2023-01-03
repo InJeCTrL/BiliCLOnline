@@ -6,7 +6,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using static BiliCLOnline.Utils.Constants;
 
@@ -139,8 +138,6 @@ namespace BiliCLOnline.Services
                 return taskGUID;
             }
 
-            // 并发控制, 防止请求速度过快
-            SemaphoreSlim maxConcurrentLimit = new(MaxConcurrentFetchLimit);
             // 并发任务列表
             var fillTaskList = new List<Task>();
             // 评论页数
@@ -153,8 +150,6 @@ namespace BiliCLOnline.Services
                     var idxPage = i;
                     fillTaskList.Add(Task.Run(async () =>
                     {
-                        await maxConcurrentLimit.WaitAsync();
-
                         var replyAPIReturn = await webHelper.GetResponse<ReplyData>($"{replyAPIURLPrefix}{idxPage}");
                         var replyData = replyAPIReturn.data;
 
@@ -184,8 +179,6 @@ namespace BiliCLOnline.Services
                                 concurrentTotalList.Add(replyToTotal);
                             }
                         }
-
-                        maxConcurrentLimit.Release();
                     }));
                 }
 

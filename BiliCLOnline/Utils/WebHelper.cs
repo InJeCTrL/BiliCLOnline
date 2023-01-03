@@ -4,9 +4,12 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using static BiliCLOnline.Utils.Constants;
 
 namespace BiliCLOnline.Utils
 {
@@ -37,6 +40,11 @@ namespace BiliCLOnline.Utils
         {
             Timeout = TimeSpan.FromSeconds(5)
         };
+
+        /// <summary>
+        /// 并发请求网络的信号量
+        /// </summary>
+        private readonly SemaphoreSlim ConcurrentLimit = new(MaxConcurrentFetchLimit);
 
         /// <summary>
         /// ScrapingAnt token列表
@@ -79,13 +87,12 @@ namespace BiliCLOnline.Utils
                 };
 
                 using var response = await HCaptchaClient.PostAsync(
-                    Constants.HCaptchaVerifyURL,
+                    HCaptchaVerifyURL,
                     new FormUrlEncodedContent(postData)
                     );
                 response.EnsureSuccessStatusCode();
 
-                using var responseStream = await response.Content.ReadAsStreamAsync();
-                var hCaptchaReturn = await JsonSerializer.DeserializeAsync<HCaptchaReturn>(responseStream);
+                var hCaptchaReturn = await response.Content.ReadFromJsonAsync<HCaptchaReturn>();
 
                 return hCaptchaReturn.success;
             }
@@ -106,9 +113,9 @@ namespace BiliCLOnline.Utils
         public async Task<BilibiliAPIReturn<T>> GetResponse<T>(string URL) where T : ReturnData
         {
             BilibiliAPIReturn<T> responseJSON = default;
-
             WebAPIReturn responseWrapper = default;
 
+            await ConcurrentLimit.WaitAsync();
 
             #region 使用无代理httpclient尝试
             var localSucc = false;
@@ -117,9 +124,7 @@ namespace BiliCLOnline.Utils
             {
                 using var responseMsg = await BiliRequestLocalClient.GetAsync(URL);
                 responseMsg.EnsureSuccessStatusCode();
-
-                using var responseStream = await responseMsg.Content.ReadAsStreamAsync();
-                responseJSON = await JsonSerializer.DeserializeAsync<BilibiliAPIReturn<T>>(responseStream);
+                responseJSON = await responseMsg.Content.ReadFromJsonAsync<BilibiliAPIReturn<T>>();
 
                 if (responseJSON.code == 412)
                 {
@@ -142,7 +147,7 @@ namespace BiliCLOnline.Utils
             try
             {
                 #region 使用有代理的httpclient
-                URL = $"{Constants.ScrapingAntAPIPrefix}{HttpUtility.UrlEncode(URL)}";
+                URL = $"{ScrapingAntAPIPrefix}{HttpUtility.UrlEncode(URL)}";
 
                 do
                 {
@@ -151,9 +156,7 @@ namespace BiliCLOnline.Utils
                     {
                         using var responseMsg = await BiliRequestClient.GetAsync(URL);
                         responseMsg.EnsureSuccessStatusCode();
-
-                        using var responseStream = await responseMsg.Content.ReadAsStreamAsync();
-                        responseWrapper = await JsonSerializer.DeserializeAsync<WebAPIReturn>(responseStream);
+                        responseWrapper = await responseMsg.Content.ReadFromJsonAsync<WebAPIReturn>();
 
                         responseJSON = JsonSerializer.Deserialize<BilibiliAPIReturn<T>>(responseWrapper.content);
                     }
@@ -217,6 +220,8 @@ namespace BiliCLOnline.Utils
                 logger.LogError(message: $"Exception: [{ex}] url: [{URL}] content: [{responseWrapper.content}]");
                 throw;
             }
+            
+            ConcurrentLimit.Release();
 
             return responseJSON;
         }
