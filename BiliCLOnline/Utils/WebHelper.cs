@@ -140,6 +140,7 @@ namespace BiliCLOnline.Utils
 
             if (localSucc)
             {
+                ConcurrentLimit.Release();
                 return responseJSON;
             }
             #endregion
@@ -213,11 +214,13 @@ namespace BiliCLOnline.Utils
             catch (HttpRequestException ex)
             {
                 logger.LogError(message: $"Exception: [{ex}] url: [{URL}]");
+                ConcurrentLimit.Release();
                 throw;
             }
             catch (JsonException ex)
             {
                 logger.LogError(message: $"Exception: [{ex}] url: [{URL}] content: [{responseWrapper.content}]");
+                ConcurrentLimit.Release();
                 throw;
             }
             
