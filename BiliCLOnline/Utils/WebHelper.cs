@@ -161,10 +161,6 @@ namespace BiliCLOnline.Utils
 
                         responseJSON = JsonSerializer.Deserialize<BilibiliAPIReturn<T>>(responseWrapper.content);
                     }
-                    catch (JsonException)
-                    {
-                        continue;
-                    }
                     catch (HttpRequestException ex)
                     {
                         if (ex.StatusCode.Value == HttpStatusCode.Forbidden)
@@ -202,6 +198,12 @@ namespace BiliCLOnline.Utils
                         {
                             throw;
                         }
+                    }
+                    catch (Exception ex) when(
+                        ex is JsonException || ex is TaskCanceledException ||
+                        ex is ArgumentNullException || ex is NotSupportedException)
+                    {
+                        continue;
                     }
 
                     if (responseJSON.code != 412)
