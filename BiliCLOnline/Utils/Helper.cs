@@ -260,6 +260,10 @@ namespace BiliCLOnline.Utils
                     {
                         rawId = pattern[(lower.IndexOf("m.bilibili.com/dynamic/") + 23)..];
                     }
+                    else if (lower.Contains("m.bilibili.com/dynamic/"))
+                    {
+                        rawId = pattern[(lower.IndexOf("bilibili.com/opus/") + 18)..];
+                    }
 
                     #region 去除后续参数
                     if (rawId.Contains('?'))
