@@ -260,7 +260,7 @@ namespace BiliCLOnline.Utils
                     {
                         rawId = pattern[(lower.IndexOf("m.bilibili.com/dynamic/") + 23)..];
                     }
-                    else if (lower.Contains("m.bilibili.com/dynamic/"))
+                    else if (lower.Contains("bilibili.com/opus/"))
                     {
                         rawId = pattern[(lower.IndexOf("bilibili.com/opus/") + 18)..];
                     }
