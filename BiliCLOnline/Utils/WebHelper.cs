@@ -1,4 +1,5 @@
 ﻿using BiliCLOnline.Models;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -63,11 +64,17 @@ namespace BiliCLOnline.Utils
 
         private readonly ILogger<WebHelper> logger;
 
-        public WebHelper(ILogger<WebHelper> _logger)
+        private readonly IConfiguration configuration;
+
+        public WebHelper(ILogger<WebHelper> _logger, IConfiguration _config)
         {
-            SAkeys = (Environment.GetEnvironmentVariable("SAKeys") ?? "").Split(";", StringSplitOptions.RemoveEmptyEntries);
-            BiliRequestClient.DefaultRequestHeaders.Add("x-api-key", SAkeys[0]);
+            if (!_config.GetValue<bool>("LocalVersion"))
+            {
+                SAkeys = (Environment.GetEnvironmentVariable("SAKeys") ?? "").Split(";", StringSplitOptions.RemoveEmptyEntries);
+                BiliRequestClient.DefaultRequestHeaders.Add("x-api-key", SAkeys[0]);
+            }
             logger = _logger;
+            configuration = _config;
         }
 
         /// <summary>
@@ -145,85 +152,88 @@ namespace BiliCLOnline.Utils
             }
             #endregion
 
-            try
+            if (!configuration.GetValue<bool>("LocalVersion"))
             {
-                #region 使用有代理的httpclient
-                URL = $"{ScrapingAntAPIPrefix}{HttpUtility.UrlEncode(URL)}";
-
-                do
+                try
                 {
-                    int currentSAidx = idxSAkey;
-                    try
-                    {
-                        using var responseMsg = await BiliRequestClient.GetAsync(URL);
-                        responseMsg.EnsureSuccessStatusCode();
-                        responseWrapper = await responseMsg.Content.ReadFromJsonAsync<WebAPIReturn>();
+                    #region 使用有代理的httpclient
+                    URL = $"{ScrapingAntAPIPrefix}{HttpUtility.UrlEncode(URL)}";
 
-                        responseJSON = JsonSerializer.Deserialize<BilibiliAPIReturn<T>>(responseWrapper.content);
-                    }
-                    catch (HttpRequestException ex)
+                    do
                     {
-                        if (ex.StatusCode.Value == HttpStatusCode.Forbidden)
+                        int currentSAidx = idxSAkey;
+                        try
                         {
-                            logger.LogWarning(message: $"Warning: ScrapingAnt limit exceed [{ex}] url: [{URL}]");
-                            // 其它并发线程已推进了idxSAkey
-                            if (currentSAidx < idxSAkey)
+                            using var responseMsg = await BiliRequestClient.GetAsync(URL);
+                            responseMsg.EnsureSuccessStatusCode();
+                            responseWrapper = await responseMsg.Content.ReadFromJsonAsync<WebAPIReturn>();
+
+                            responseJSON = JsonSerializer.Deserialize<BilibiliAPIReturn<T>>(responseWrapper.content);
+                        }
+                        catch (HttpRequestException ex)
+                        {
+                            if (ex.StatusCode.Value == HttpStatusCode.Forbidden)
                             {
-                                continue;
-                            }
-                            lock (mSAidx)
-                            {
+                                logger.LogWarning(message: $"Warning: ScrapingAnt limit exceed [{ex}] url: [{URL}]");
                                 // 其它并发线程已推进了idxSAkey
                                 if (currentSAidx < idxSAkey)
                                 {
                                     continue;
                                 }
-                                // 此线程应当更换SAkey
-                                else
+                                lock (mSAidx)
                                 {
-                                    ++idxSAkey;
-                                    // 超出token列表
-                                    if (idxSAkey >= SAkeys.Length)
+                                    // 其它并发线程已推进了idxSAkey
+                                    if (currentSAidx < idxSAkey)
                                     {
-                                        throw;
+                                        continue;
                                     }
+                                    // 此线程应当更换SAkey
+                                    else
+                                    {
+                                        ++idxSAkey;
+                                        // 超出token列表
+                                        if (idxSAkey >= SAkeys.Length)
+                                        {
+                                            throw;
+                                        }
 
-                                    BiliRequestClient.DefaultRequestHeaders.Remove("x-api-key");
-                                    BiliRequestClient.DefaultRequestHeaders.Add("x-api-key", SAkeys[idxSAkey]);
-                                    continue;
+                                        BiliRequestClient.DefaultRequestHeaders.Remove("x-api-key");
+                                        BiliRequestClient.DefaultRequestHeaders.Add("x-api-key", SAkeys[idxSAkey]);
+                                        continue;
+                                    }
                                 }
                             }
+                            else
+                            {
+                                throw;
+                            }
                         }
-                        else
+                        catch (Exception ex) when(
+                            ex is JsonException || ex is TaskCanceledException ||
+                            ex is ArgumentNullException || ex is NotSupportedException)
                         {
-                            throw;
+                            continue;
                         }
-                    }
-                    catch (Exception ex) when(
-                        ex is JsonException || ex is TaskCanceledException ||
-                        ex is ArgumentNullException || ex is NotSupportedException)
-                    {
-                        continue;
-                    }
 
-                    if (responseJSON.code != 412)
-                    {
-                        break;
-                    }
-                } while (true);
-                #endregion
-            }
-            catch (HttpRequestException ex)
-            {
-                logger.LogError(message: $"Exception: [{ex}] url: [{URL}]");
-                ConcurrentLimit.Release();
-                throw;
-            }
-            catch (JsonException ex)
-            {
-                logger.LogError(message: $"Exception: [{ex}] url: [{URL}] content: [{responseWrapper.content}]");
-                ConcurrentLimit.Release();
-                throw;
+                        if (responseJSON.code != 412)
+                        {
+                            break;
+                        }
+                    } while (true);
+                    #endregion
+                }
+                catch (HttpRequestException ex)
+                {
+                    logger.LogError(message: $"Exception: [{ex}] url: [{URL}]");
+                    ConcurrentLimit.Release();
+                    throw;
+                }
+                catch (JsonException ex)
+                {
+                    logger.LogError(message: $"Exception: [{ex}] url: [{URL}] content: [{responseWrapper.content}]");
+                    ConcurrentLimit.Release();
+                    throw;
+                }
             }
             
             ConcurrentLimit.Release();
