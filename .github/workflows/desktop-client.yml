@@ -17,7 +17,8 @@ jobs:
         dotnet-version: 7.0.201
     - name: Change appsettings to local version
       run: |
-        cat BiliCLOnline/appsettings.json | sed -e '/^}/d' > tmp.json
+        cat BiliCLOnline/appsettings.json | sed -e '/^}/d' | sed -e '$d' > tmp.json
+        echo '"urls": "http://*:63003"' >> tmp.json
         echo ',"LocalVersion": true}' >> tmp.json
         cat tmp.json > BiliCLOnline/appsettings.json
     - name: Restore dependencies

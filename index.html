@@ -286,14 +286,16 @@
 		var replyData = [];
 		var startDateTime;
 		var endDateTime;
-		var isLocalVersion = (window.location.href.indexOf("?localversion") != -1);
+		var totalUrl = window.location.href;
+		var isLocalVersion = (totalUrl.indexOf("?localversion") != -1);
 		var onlineDomain = "https://biliclonline-injectrl.cloud.okteto.net";
-		var localDomain = "http://127.0.0.1:5000";
+		var localDomain = "http://127.0.0.1";
 
 		if (isLocalVersion) {
 			document.getElementById('captcha1').style.display = "none";
 			document.getElementById('captcha2').style.display = "none";
 			document.getElementById('envLbl').innerText = "Locally";
+			localDomain += ':' + totalUrl.substring(totalUrl.indexOf("?localversion") + 14);
 		}
 
 		layui.use(['layer', 'element', 'form', 'layedit', 'laydate', 'table'], function () {
