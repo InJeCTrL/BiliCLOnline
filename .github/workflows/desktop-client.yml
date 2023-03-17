@@ -60,5 +60,6 @@ jobs:
         files: >
           win-x64.zip
           win-x86.zip
-          osx-x64.zip
+          macos-x64.zip
         allow_override: true
+        gzip: false
