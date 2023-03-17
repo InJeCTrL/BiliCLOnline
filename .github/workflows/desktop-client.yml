@@ -19,7 +19,7 @@ jobs:
       run: |
         cat BiliCLOnline/appsettings.json | sed -e '/^}/d' > tmp.json
         echo ',"LocalVersion": true}' >> tmp.json
-        cat 1.json > BiliCLOnline/appsettings.json
+        cat tmp.json > BiliCLOnline/appsettings.json
     - name: Restore dependencies
       run: dotnet restore
     - name: Publish win-x64
