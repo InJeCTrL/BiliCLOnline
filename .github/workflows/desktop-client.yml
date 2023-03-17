@@ -49,11 +49,16 @@ jobs:
         filename: 'macos-x64.zip'
         path: ./BiliCLOnline/bin/Release/net7.0/osx-x64/publish
         exclusions: '*.pdb *.config'
-    - name: Release
-      uses: softprops/action-gh-release@v1
-      if: startsWith(github.ref, 'refs/tags/')
+    - name: Publish Release
+      uses: meeDamian/github-release@2.0
       with:
-        files: |
+        token: ${{ secrets.GITHUB_TOKEN }}
+        tag: LocalVersion
+        name: LocalVersion
+        body: >
+          本地版本，适用于远程服务不可用的情况
+        files: >
           win-x64.zip
           win-x86.zip
           osx-x64.zip
+        allow_override: true
