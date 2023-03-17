@@ -6,7 +6,7 @@
 	<meta name="referrer" content="no-referrer" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=yes" />
 	<link rel="stylesheet" type="text/css" href="https://www.layuicdn.com/layui-v2.5.7/css/layui.css" />
-	<!-- <script src="https://js.hcaptcha.com/1/api.js" async defer></script> -->
+	<script src="https://js.hcaptcha.com/1/api.js" async defer></script>
 	</head>
 		<style type="text/css">
 			td > .layui-table-cell {
@@ -44,7 +44,7 @@
 													<input type="text" id="pattern" name="pattern" autocomplete="off" placeholder="" class="layui-input">
 												</div>
 											</div>
-											<!-- <div id="captcha1" style="text-align:center" class="h-captcha" data-sitekey="cb9b8821-c860-4a95-96a9-07f71cc79937"></div> -->
+											<div id="captcha1" style="text-align:center" class="h-captcha" data-sitekey="cb9b8821-c860-4a95-96a9-07f71cc79937"></div>
 	<div>
 		<input id="set" type="button" value="OK" class="layui-btn layui-btn-normal layui-btn-lg layui-btn-radius layui-btn-fluid">
 	</div>
@@ -275,7 +275,7 @@
 	</div>
 	</div>
 	<div style="text-align: center;padding-bottom: 10px;">
-		Running .NET 7.0 on K8s (Okteto)
+		Running .NET 7.0 on <span id="envLbl">K8s (Okteto)</span>
 	</div>
 	</div>
 	<script type="text/html" id="tools">
@@ -286,6 +286,15 @@
 		var replyData = [];
 		var startDateTime;
 		var endDateTime;
+		var isLocalVersion = (window.location.href.indexOf("?localversion") != -1);
+		var onlineDomain = "https://biliclonline-injectrl.cloud.okteto.net";
+		var localDomain = "http://127.0.0.1:5000";
+
+		if (isLocalVersion) {
+			document.getElementById('captcha1').style.display = "none";
+			document.getElementById('captcha2').style.display = "none";
+			document.getElementById('envLbl').innerText = "Locally";
+		}
 
 		layui.use(['layer', 'element', 'form', 'layedit', 'laydate', 'table'], function () {
 			var layer = layui.layer
@@ -341,10 +350,9 @@
 			$("#set").click(function () {
 				$('#set').addClass("layui-btn-disabled").attr("disabled", true);
 				$.ajax({
-					// url: "https://biliclonline-injectrl.cloud.okteto.net/api/Bearer",
-					url: "http://127.0.0.1:5000/api/Bearer",
+					url: (isLocalVersion ? localDomain : onlineDomain) + "/api/Bearer",
 					type: "get",
-					// headers: { "h-captcha-response": $("#captcha1")[0].children[0].attributes["data-hcaptcha-response"].nodeValue },
+					headers: { "h-captcha-response": isLocalVersion ? "" : $("#captcha1")[0].children[0].attributes["data-hcaptcha-response"].nodeValue },
 					data: { pattern: $("#pattern").val() },
 					crossDomain: true,
 					success: function (data) {
@@ -410,7 +418,7 @@
 
 			function refreshConfirmation(taskID) {
 				$.ajax({
-					url: "https://biliclonline-injectrl.cloud.okteto.net/api/Confirmation/" + taskID,
+					url: (isLocalVersion ? localDomain : onlineDomain) + "/api/Confirmation/" + taskID,
 					type: "get",
 					crossDomain: true,
 					success: function (data) {
@@ -467,9 +475,9 @@
 
 				layer.msg("请耐心等待，不要刷新或返回");
 				$.ajax({
-					url: "https://biliclonline-injectrl.cloud.okteto.net/api/Reply/" + Id,
+					url: (isLocalVersion ? localDomain : onlineDomain) + "/api/Reply/" + Id,
 					type: "get",
-					headers: { "h-captcha-response": $("#captcha2")[0].children[0].attributes["data-hcaptcha-response"].nodeValue },
+					headers: { "h-captcha-response": isLocalVersion ? "" : $("#captcha2")[0].children[0].attributes["data-hcaptcha-response"].nodeValue },
 					crossDomain: true,
 					success: function (data) {
 						if (data["code"] != 0) {

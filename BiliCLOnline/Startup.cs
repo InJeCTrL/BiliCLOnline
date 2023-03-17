@@ -27,7 +27,7 @@ namespace BiliCLOnline
         {
             if (Configuration.GetValue<bool>("LocalVersion"))
             {
-                OpenURL("https://injectrl.github.io/BiliCLOnline/index.html?localversion");
+                Helper.OpenURL("https://injectrl.github.io/BiliCLOnline/index.html?localversion");
             }
             services.AddSingleton<WebHelper>();
             services.AddSingleton<Helper>();

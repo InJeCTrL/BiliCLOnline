@@ -331,7 +331,7 @@ namespace BiliCLOnline.Utils
         /// 调用默认浏览器打开链接
         /// </summary>
         /// <param name="url">网址链接</param>
-        private void OpenURL(string url)
+        public static void OpenURL(string url)
         {
             try
             {
