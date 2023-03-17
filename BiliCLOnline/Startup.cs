@@ -24,6 +24,10 @@ namespace BiliCLOnline
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            if (Configuration.GetValue<bool>("LocalVersion"))
+            {
+                Helper.OpenURL("https://injectrl.github.io/BiliCLOnline/index.html?localversion");
+            }
             services.AddSingleton<WebHelper>();
             services.AddSingleton<Helper>();
             services.AddScoped<IBearerInfo, BearerInfo>();
@@ -44,10 +48,19 @@ namespace BiliCLOnline
             {
                 options.AddPolicy("cors", p =>
                 {
-                    p.WithOrigins(Environment.GetEnvironmentVariable("CorsTarget") ?? "")
-                    .AllowAnyHeader()
-                    .AllowAnyMethod()
-                    .AllowCredentials();
+                    if (!Configuration.GetValue<bool>("LocalVersion"))
+                    {
+                        p.WithOrigins(Environment.GetEnvironmentVariable("CorsTarget") ?? "")
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowCredentials();
+                    }
+                    else
+                    {
+                        p.AllowAnyOrigin()
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
+                    }
                 });
             });
 
@@ -57,7 +70,10 @@ namespace BiliCLOnline
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            app.UseConcurrencyLimiter();
+            if (!Configuration.GetValue<bool>("LocalVersion"))
+            {
+                app.UseConcurrencyLimiter();
+            }
 
             if (env.IsDevelopment())
             {
@@ -68,9 +84,13 @@ namespace BiliCLOnline
                     c.SwaggerEndpoint("/swagger/v1/swagger.json", "HttpReplApi v1");
                 });
             }
+
             app.UseCors("cors");
 
-            app.UseMiddleware<HCaptchaVerifyingMiddleware>();
+            if (!Configuration.GetValue<bool>("LocalVersion"))
+            {    
+                app.UseMiddleware<HCaptchaVerifyingMiddleware>();
+            }
 
             app.UseRouting();
 
