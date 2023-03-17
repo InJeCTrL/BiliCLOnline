@@ -6,6 +6,15 @@
 
 本项目是上一年写的WPF应用[BiliCommentLottery](https://github.com/InJeCTrL/BiliCommentLottery)的升级版，尽管当时使用的SDK是DotNet Core 3.1，但由于WPF是Windows操作系统的专用UI框架，无法跨平台，给许多使用者带来些许不便，所以这次重构了老项目，将其由WPF应用改为WEB应用，后端基于DotNet Core开发WebAPI，前端界面使用LayUI搭建，这次在诸多平台上都可以使用了！（直接访问这个repo的[github-pages](https://injectrl.github.io/BiliCLOnline/)就可以）
 
+由于后端服务部署在海外，请求网络质量无法保证。若频繁提示服务不可用，请运行[Release中的本地版本](https://github.com/InJeCTrL/BiliCLOnline/releases/tag/LocalVersion)。
+
+Windows用户直接运行BiliCLOnline.exe即可。
+
+MacOS用户在BiliCLOnline文件所在目录下启动终端，并执行命令：
+```bash
+./BiliCLOnline
+```
+
 ## 特点
 
 - [x] PC端、移动端均可使用（B/S）
@@ -55,6 +64,10 @@
      `https://b23.tv/Qzqqj9`
 
 ## 更新与其它说明
+
+2023-03-17更新：
+
+1. 允许用户运行本地服务端，以避免网络原因导致的不可用问题
 
 2022-12-29更新：
 
