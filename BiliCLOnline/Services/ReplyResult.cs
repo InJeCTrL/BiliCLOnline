@@ -126,7 +126,7 @@ namespace BiliCLOnline.Services
             #region 获取评论总条数
             var firstPage = await webHelper.GetResponse<ReplyData>($"{ replyAPIURLPrefix }1");
 
-            var replyCount = firstPage.data.page.count;
+            var replyCount = firstPage.data.page.acount;
             #endregion
 
             if (replyCount > MaxReplyLimit)
