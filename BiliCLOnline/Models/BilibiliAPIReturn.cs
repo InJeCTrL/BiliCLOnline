@@ -29,32 +29,48 @@ namespace BiliCLOnline.Models
     /// </summary>
     public class DynamicDetailData : DetailData
     {
-        public class Card
+        public class Item
         {
-            public class Desc
+            public class Basic
             {
-                public long uid { get; set; }
-                public long dynamic_id { get; set; }
-                public int comment { get; set; }
-                public long timestamp { get; set; }
-                public int like { get; set; }
-                public int repost { get; set; }
-                public int type { get; set; }
-                public long rid { get; set; }
-                public class UserProfile
-                {
-                    public class Info
-                    {
-                        public string face { get; set; }
-                        public string uname { get; set; }
-                    }
-                    public Info info { get; set; }
-                }
-                public UserProfile user_profile { get; set; }
+                public int comment_type { get; set; }
+                public long rid_str { get; set; }
             }
-            public Desc desc { get; set; }
+            public class Modules
+            {
+                public class Module_author
+                {
+                    public long mid { get; set; }
+                    public string name { get; set; }
+                    public string face { get; set; }
+                    public long pub_ts { get; set; }
+                }
+                public class Module_stat
+                {
+                    public class Comment
+                    {
+                        public int count { get; set; }
+                    }
+                    public class Forward
+                    {
+                        public int count { get; set; }
+                    }
+                    public class Like
+                    {
+                        public int count { get; set; }
+                    }
+                    public Comment comment { get; set; }
+                    public Forward forward { get; set; }
+                    public Like like { get; set; }
+                }
+                public Module_author module_author { get; set; }
+                public Module_stat module_stat { get; set; }
+            }
+            public Basic basic { get; set; }
+            public Modules modules { get; set; }
+            public string id_str { get; set; }
         }
-        public Card card { get; set; }
+        public Item item { get; set; }
     }
 
     /// <summary>

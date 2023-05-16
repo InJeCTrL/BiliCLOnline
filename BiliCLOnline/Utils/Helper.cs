@@ -131,10 +131,10 @@ namespace BiliCLOnline.Utils
 
                 // get_dynamic_detail中type为4: WorkType=17, OID=动态ID
                 // get_dynamic_detail中type为2: WorkType=11, OID=rid
-                if (dynamicDetail.card.desc.type == 2)
+                if (dynamicDetail.item.basic.comment_type == 11)
                 {
                     workType = 11;
-                    oid = dynamicDetail.card.desc.rid.ToString();
+                    oid = dynamicDetail.item.basic.rid_str.ToString();
                 }
             }
             // 视频稿件使用aid作为oid

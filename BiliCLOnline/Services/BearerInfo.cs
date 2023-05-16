@@ -154,19 +154,19 @@ namespace BiliCLOnline.Services
                         Type = BearerType.Dynamic,
                         Bearer = new Dynamic
                         {
-                            CommentCount = dynamicData.card.desc.comment,
-                            FaceURL = dynamicData.card.desc.user_profile.info.face,
-                            PubTime = helper.TimeTrans(dynamicData.card.desc.timestamp),
+                            CommentCount = dynamicData.item.modules.module_stat.comment.count,
+                            FaceURL = dynamicData.item.modules.module_author.face,
+                            PubTime = helper.TimeTrans(dynamicData.item.modules.module_author.pub_ts),
                             Id = formalId,
-                            LikeCount = dynamicData.card.desc.like,
-                            ShareCount = dynamicData.card.desc.repost,
-                            UID = dynamicData.card.desc.uid,
-                            UName = dynamicData.card.desc.user_profile.info.uname,
+                            LikeCount = dynamicData.item.modules.module_stat.like.count,
+                            ShareCount = dynamicData.item.modules.module_stat.forward.count,
+                            UID = dynamicData.item.modules.module_author.mid,
+                            UName = dynamicData.item.modules.module_author.name,
                             UserHomeURL = string.Format(
-                                Constants.SpaceURLTemplate, dynamicData.card.desc.uid
+                                Constants.SpaceURLTemplate, dynamicData.item.modules.module_author.mid
                                 ),
                             URL = string.Format(
-                                Constants.DynamicURLTemplate, dynamicData.card.desc.dynamic_id
+                                Constants.DynamicURLTemplate, dynamicData.item.id_str
                             )
                         }
                     };

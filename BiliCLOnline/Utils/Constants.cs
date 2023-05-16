@@ -37,7 +37,7 @@
             public const string AID = "http://api.bilibili.com/x/web-interface/view/detail?aid={0}";
             public const string BVID = "http://api.bilibili.com/x/web-interface/view/detail?bvid={0}";
             public const string CV = "http://api.bilibili.com/x/article/viewinfo?id={0}";
-            public const string DID = "http://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/get_dynamic_detail?dynamic_id={0}";
+            public const string DID = "http://api.bilibili.com/x/polymer/web-dynamic/v1/detail?id={0}";
         }
 
         public static class ReplyURLPrefixTemplate
