@@ -1,0 +1,66 @@
+name: Desktop Client
+
+on:
+  push:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 7.0.201
+    - name: Change appsettings to local version
+      run: |
+        cat BiliCLOnline/appsettings.json | sed -e '/^}/d' | sed -e '$d' > tmp.json
+        echo '"urls": "http://*:63003"' >> tmp.json
+        echo ',"LocalVersion": true}' >> tmp.json
+        cat tmp.json > BiliCLOnline/appsettings.json
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Publish win-x64
+      run: dotnet publish -r win-x64 -p:PublishSingleFile=true --self-contained -c Release -p:IncludeAllContentForSelfExtract=true -p:PublishTrimmed=true
+    - name: Publish win-x86
+      run: dotnet publish -r win-x86 -p:PublishSingleFile=true --self-contained -c Release -p:IncludeAllContentForSelfExtract=true -p:PublishTrimmed=true
+    - name: Publish osx-x64
+      run: dotnet publish -r osx-x64 -p:PublishSingleFile=true --self-contained -c Release -p:IncludeAllContentForSelfExtract=true -p:PublishTrimmed=true
+    - name: Archive win-x64 Release
+      uses: thedoctor0/zip-release@0.7.1
+      with:
+        type: 'zip'
+        filename: 'win-x64.zip'
+        directory: ./BiliCLOnline/bin/Release/net7.0/win-x64/publish
+        exclusions: '*.pdb *.config'
+    - name: Archive win-x86 Release
+      uses: thedoctor0/zip-release@0.7.1
+      with:
+        type: 'zip'
+        filename: 'win-x86.zip'
+        directory: ./BiliCLOnline/bin/Release/net7.0/win-x86/publish
+        exclusions: '*.pdb *.config'
+    - name: Archive macos-x64 Release
+      uses: thedoctor0/zip-release@0.7.1
+      with:
+        type: 'zip'
+        filename: 'macos-x64.zip'
+        directory: ./BiliCLOnline/bin/Release/net7.0/osx-x64/publish
+        exclusions: '*.pdb *.config'
+    - name: Publish Release
+      uses: meeDamian/github-release@2.0
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        tag: LocalVersion
+        name: LocalVersion
+        body: >
+          本地版本，适用于远程服务不可用的情况
+        files: >
+          ./BiliCLOnline/bin/Release/net7.0/win-x64/publish/win-x64.zip
+          ./BiliCLOnline/bin/Release/net7.0/win-x86/publish/win-x86.zip
+          ./BiliCLOnline/bin/Release/net7.0/osx-x64/publish/macos-x64.zip
+        allow_override: true
+        gzip: false

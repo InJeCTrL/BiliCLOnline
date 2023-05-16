@@ -275,7 +275,7 @@
 	</div>
 	</div>
 	<div style="text-align: center;padding-bottom: 10px;">
-		Running .NET 7.0 on <span id="envLbl">K8s (Okteto)</span>
+		Running .NET 7.0 <span id="envLbl">on K8s (Okteto)<br>若频繁提示服务不可用，请运行<a href="https://github.com/InJeCTrL/BiliCLOnline/releases/tag/LocalVersion">本地版本</a></span>
 	</div>
 	</div>
 	<script type="text/html" id="tools">
@@ -286,14 +286,16 @@
 		var replyData = [];
 		var startDateTime;
 		var endDateTime;
-		var isLocalVersion = (window.location.href.indexOf("?localversion") != -1);
+		var totalUrl = window.location.href;
+		var isLocalVersion = (totalUrl.indexOf("?localversion") != -1);
 		var onlineDomain = "https://biliclonline-injectrl.cloud.okteto.net";
-		var localDomain = "http://127.0.0.1:5000";
+		var localDomain = "http://127.0.0.1";
 
 		if (isLocalVersion) {
 			document.getElementById('captcha1').style.display = "none";
 			document.getElementById('captcha2').style.display = "none";
 			document.getElementById('envLbl').innerText = "Locally";
+			localDomain += ':' + totalUrl.substring(totalUrl.indexOf("?localversion") + 14);
 		}
 
 		layui.use(['layer', 'element', 'form', 'layedit', 'laydate', 'table'], function () {

@@ -24,9 +24,16 @@ namespace BiliCLOnline
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var port = 80;
+            var url = Configuration.GetValue<string>("urls") ?? "";
+            if (url.Contains(':'))
+            {
+                int.TryParse(url[(url.LastIndexOf(':') + 1)..], out port);
+            }
+
             if (Configuration.GetValue<bool>("LocalVersion"))
             {
-                Helper.OpenURL("https://injectrl.github.io/BiliCLOnline/index.html?localversion");
+                Helper.OpenURL($"https://injectrl.github.io/BiliCLOnline/index.html?localversion={port}");
             }
             services.AddSingleton<WebHelper>();
             services.AddSingleton<Helper>();
@@ -88,7 +95,7 @@ namespace BiliCLOnline
             app.UseCors("cors");
 
             if (!Configuration.GetValue<bool>("LocalVersion"))
-            {    
+            {
                 app.UseMiddleware<HCaptchaVerifyingMiddleware>();
             }
 

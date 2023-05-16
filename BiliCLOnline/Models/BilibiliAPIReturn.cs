@@ -157,7 +157,7 @@ namespace BiliCLOnline.Models
         public List<Reply> replies { get; set; }
         public class Page
         {
-            public int count { get; set; }
+            public int acount { get; set; }
         }
         public Page page { get; set; }
     }
