@@ -24,11 +24,11 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
     - name: Publish win-x64
-      run: dotnet publish -r win-x64 -p:PublishSingleFile=true --self-contained -c Release -p:IncludeAllContentForSelfExtract=true -p:PublishTrimmed=true
+      run: dotnet publish -c Release -r win-x64 -p:PublishAot=true -p:DebugType=none
     - name: Publish win-x86
-      run: dotnet publish -r win-x86 -p:PublishSingleFile=true --self-contained -c Release -p:IncludeAllContentForSelfExtract=true -p:PublishTrimmed=true
+      run: dotnet publish -c Release -r win-x86 -p:PublishAot=true -p:DebugType=none
     - name: Publish osx-x64
-      run: dotnet publish -r osx-x64 -p:PublishSingleFile=true --self-contained -c Release -p:IncludeAllContentForSelfExtract=true -p:PublishTrimmed=true
+      run: dotnet publish -c Release -r osx-x64 -p:PublishAot=true -p:DebugType=none
     - name: Archive win-x64 Release
       uses: thedoctor0/zip-release@0.7.1
       with:
