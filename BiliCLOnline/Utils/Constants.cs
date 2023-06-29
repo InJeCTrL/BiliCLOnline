@@ -28,7 +28,7 @@
 
         public const int MaxReplyLimit = 40000;
 
-        public const int ReplyPageSize = 49;
+        public const int ReplyPageSize = 20;
 
         public const int MaxConcurrentFetchLimit = 10;
 
