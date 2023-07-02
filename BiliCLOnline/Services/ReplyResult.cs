@@ -56,6 +56,36 @@ namespace BiliCLOnline.Services
             #endregion
         }
 
+        private void AddReplyToList(ReplyData replyData, string replyURLPrefix, ConcurrentDictionary<string, Reply> concurrentTotalList)
+        {
+            if (replyData != null && replyData.replies != null && replyData.replies.Count > 0)
+            {
+                foreach (var reply in replyData.replies)
+                {
+                    var rpid = reply.rpid_str;
+                    var pubTime = helper.TimeTrans(reply.ctime);
+                    var uid = reply.mid;
+                    var message = reply.content.message;
+
+                    var replyToTotal = new Reply
+                    {
+                        Id = rpid,
+                        URL = $"{replyURLPrefix}{rpid}",
+                        LikeCount = reply.like,
+                        UID = uid,
+                        Content = message,
+                        PubTime = pubTime,
+                        UName = reply.member.uname,
+                        UserHomeURL = string.Format(SpaceURLTemplate, uid),
+                        FaceURL = reply.member.avatar,
+                        Level = reply.member.level_info.current_level
+                    };
+
+                    concurrentTotalList.TryAdd(rpid, replyToTotal);
+                }
+            }
+        }
+
         public async Task<string> InvokeGetListTask(string formalId)
         {
             var taskGUID = Guid.NewGuid().ToString();
@@ -115,7 +145,7 @@ namespace BiliCLOnline.Services
             #endregion
 
             // 评论列表
-            var concurrentTotalList = new ConcurrentBag<Reply>();
+            var concurrentTotalList = new ConcurrentDictionary<string, Reply>();
 
             // 评论区信息接口前缀
             var replyAPIURLPrefix = helper.GetReplyAPIURL(workBasics.Item2, workBasics.Item3, validDetail.Item2);
@@ -123,10 +153,11 @@ namespace BiliCLOnline.Services
             // 评论条目URL前缀
             var replyURLPrefix = helper.GetReplyURLPrefix(workBasics.Item2, workBasics.Item3);
             
-            #region 获取评论总条数
-            var firstPage = await webHelper.GetResponse<ReplyData>($"{ replyAPIURLPrefix }1");
+            #region 获取评论总条数和首个next
+            var firstPage = await webHelper.GetResponse<ReplyData>($"{ replyAPIURLPrefix }");
 
-            var replyCount = firstPage.data.page.acount;
+            var replyCount = firstPage.data.cursor.all_count;
+            var firstNext = firstPage.data.cursor.next;
             #endregion
 
             if (replyCount > MaxReplyLimit)
@@ -138,47 +169,22 @@ namespace BiliCLOnline.Services
                 return taskGUID;
             }
 
+            #region 首页评论加入列表
+            AddReplyToList(firstPage.data, replyURLPrefix, concurrentTotalList);
+            #endregion
+
             // 并发任务列表
             var fillTaskList = new List<Task>();
-            // 评论页数
-            int pageCnt = (int)Math.Ceiling((double)replyCount / ReplyPageSize);
-
             _ = Task.Run(async () =>
             {
-                for (int i = 1; i <= pageCnt; ++i)
+                for (int pageNext = firstNext; pageNext > 0; pageNext -= ReplyPageSize)
                 {
-                    var idxPage = i;
+                    var next = pageNext;
                     fillTaskList.Add(Task.Run(async () =>
                     {
-                        var replyAPIReturn = await webHelper.GetResponse<ReplyData>($"{replyAPIURLPrefix}{idxPage}");
-                        var replyData = replyAPIReturn.data;
+                        var replyAPIReturn = await webHelper.GetResponse<ReplyData>($"{replyAPIURLPrefix}{next}");
 
-                        if (replyData.replies != null && replyData.replies.Count > 0)
-                        {
-                            foreach (var reply in replyData.replies)
-                            {
-                                var rpid = reply.rpid_str;
-                                var pubTime = helper.TimeTrans(reply.ctime);
-                                var uid = reply.mid;
-                                var message = reply.content.message;
-
-                                var replyToTotal = new Reply
-                                {
-                                    Id = rpid,
-                                    URL = $"{replyURLPrefix}{rpid}",
-                                    LikeCount = reply.like,
-                                    UID = uid,
-                                    Content = message,
-                                    PubTime = pubTime,
-                                    UName = reply.member.uname,
-                                    UserHomeURL = string.Format(SpaceURLTemplate, uid),
-                                    FaceURL = reply.member.avatar,
-                                    Level = reply.member.level_info.current_level
-                                };
-
-                                concurrentTotalList.Add(replyToTotal);
-                            }
-                        }
+                        AddReplyToList(replyAPIReturn.data, replyURLPrefix, concurrentTotalList);
                     }));
                 }
 
@@ -188,7 +194,7 @@ namespace BiliCLOnline.Services
                 logger.LogInformation(message: $"ReplyResult Succ: {formalId}",
                                     args: new object[] { formalId, replyCount });
 
-                helper.guidReplyResults[taskGUID] = Tuple.Create(true, "", concurrentTotalList.ToList());
+                helper.guidReplyResults[taskGUID] = Tuple.Create(true, "", concurrentTotalList.Values.ToList());
             });
 
             return taskGUID;

@@ -155,10 +155,11 @@ namespace BiliCLOnline.Models
 
         }
         public List<Reply> replies { get; set; }
-        public class Page
+        public class Cursor
         {
-            public int acount { get; set; }
+            public int all_count { get; set; }
+            public int next { get; set; }
         }
-        public Page page { get; set; }
+        public Cursor cursor { get; set; }
     }
 }

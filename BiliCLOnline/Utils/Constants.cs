@@ -6,7 +6,7 @@
             "https://api.scrapingant.com/v1/general?return_text=true&url=";
 
         public const string ReplyAPITemplate =
-            "http://api.bilibili.com/x/v2/reply?oid={0}&type={1}&sort=1&ps={2}&pn=";
+            "https://api.bilibili.com/x/v2/reply/main?mode=2&oid={0}&type={1}&ps={2}&next=";
 
         public const string SpaceURLTemplate =
             "https://space.bilibili.com/{0}";
@@ -28,24 +28,24 @@
 
         public const int MaxReplyLimit = 40000;
 
-        public const int ReplyPageSize = 20;
+        public const int ReplyPageSize = 30;
 
         public const int MaxConcurrentFetchLimit = 10;
 
         public static class BearerDetailAPITemplate
         {
-            public const string AID = "http://api.bilibili.com/x/web-interface/view/detail?aid={0}";
-            public const string BVID = "http://api.bilibili.com/x/web-interface/view/detail?bvid={0}";
-            public const string CV = "http://api.bilibili.com/x/article/viewinfo?id={0}";
-            public const string DID = "http://api.bilibili.com/x/polymer/web-dynamic/v1/detail?id={0}";
+            public const string AID = "https://api.bilibili.com/x/web-interface/view/detail?aid={0}";
+            public const string BVID = "https://api.bilibili.com/x/web-interface/view/detail?bvid={0}";
+            public const string CV = "https://api.bilibili.com/x/article/viewinfo?id={0}";
+            public const string DID = "https://api.bilibili.com/x/polymer/web-dynamic/v1/detail?id={0}";
         }
 
         public static class ReplyURLPrefixTemplate
         {
-            public const string AID = "http://www.bilibili.com/video/av{0}#reply";
-            public const string BVID = "http://www.bilibili.com/video/BV{0}#reply";
-            public const string CV = "http://www.bilibili.com/read/cv{0}#reply";
-            public const string DID = "http://t.bilibili.com/{0}#reply";
+            public const string AID = "https://www.bilibili.com/video/av{0}#reply";
+            public const string BVID = "https://www.bilibili.com/video/BV{0}#reply";
+            public const string CV = "https://www.bilibili.com/read/cv{0}#reply";
+            public const string DID = "https://t.bilibili.com/{0}#reply";
         }
     }
 }
