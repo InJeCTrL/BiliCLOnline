@@ -46,7 +46,7 @@ jobs:
           uses: datamonsters/replace-action@v2
           with:
             files: './k8s.yml'
-            replacements: '$HCaptchaSecret=${{ secrets.HCAPTCHASECRET }},$CorsTarget=${{ secrets.CORSTARGET }},$SAKeys=${{ secrets.SAKeys }}'
+            replacements: '$HCaptchaSecret=${{ secrets.HCAPTCHASECRET }},$CorsTarget=${{ secrets.CORSTARGET }}'
       -
           name: Deploy
           uses: okteto/apply@latest

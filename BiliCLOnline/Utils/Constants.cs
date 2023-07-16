@@ -1,10 +1,9 @@
-﻿namespace BiliCLOnline.Utils
+﻿using System.ComponentModel;
+
+namespace BiliCLOnline.Utils
 {
     public static class Constants
     {
-        public const string ScrapingAntAPIPrefix =
-            "https://api.scrapingant.com/v1/general?return_text=true&url=";
-
         public const string ReplyAPITemplate =
             "https://api.bilibili.com/x/v2/reply/main?mode=2&oid={0}&type={1}&ps={2}&next=";
 
@@ -31,6 +30,8 @@
         public const int ReplyPageSize = 30;
 
         public const int MaxConcurrentFetchLimit = 10;
+
+        public const int MaxTryCount = 5;
 
         public static class BearerDetailAPITemplate
         {
