@@ -155,6 +155,13 @@ namespace BiliCLOnline.Services
             
             #region 获取评论总条数和首个next
             var firstPage = await webHelper.GetResponse<ReplyData>($"{ replyAPIURLPrefix }");
+            if (firstPage == default)
+            {
+                logger.LogWarning(message: $"Http request error id: [{formalId}]");
+                helper.guidReplyResults[taskGUID] = Tuple.Create(true, "网络请求繁忙，请稍后再试", new List<Reply>());
+
+                return taskGUID;
+            }
 
             var replyCount = firstPage.data.cursor.all_count;
             var firstNext = firstPage.data.cursor.next;
@@ -177,24 +184,63 @@ namespace BiliCLOnline.Services
             var fillTaskList = new List<Task>();
             _ = Task.Run(async () =>
             {
+                var stop = false;
                 for (int pageNext = firstNext; pageNext > 0; pageNext -= ReplyPageSize)
                 {
                     var next = pageNext;
+                    if (stop)
+                    {
+                        break;
+                    }
+
                     fillTaskList.Add(Task.Run(async () =>
                     {
-                        var replyAPIReturn = await webHelper.GetResponse<ReplyData>($"{replyAPIURLPrefix}{next}");
+                        if (stop)
+                        {
+                            return;
+                        }
+
+                        var replyRequestUrl = $"{replyAPIURLPrefix}{next}";
+                        var replyAPIReturn = await webHelper.GetResponse<ReplyData>(replyRequestUrl);
+                        if (replyAPIReturn == default)
+                        {
+                            logger.LogWarning(message: $"Http request error id: [{formalId}], url: [{replyRequestUrl}]");
+                            stop = true;
+
+                            return;
+                        }
 
                         AddReplyToList(replyAPIReturn.data, replyURLPrefix, concurrentTotalList);
                     }));
                 }
 
+                #region 第一次检查stop 如果有已经stop的 快速响应获取失败的消息
+                if (stop)
+                {
+                    logger.LogWarning(message: $"Http request error id: [{formalId}]");
+                    helper.guidReplyResults[taskGUID] = Tuple.Create(true, "网络请求繁忙，请稍后再试", new List<Reply>());
+                }
+                #endregion
+
                 // 等待所有页取完
                 await Task.WhenAll(fillTaskList);
 
-                logger.LogInformation(message: $"ReplyResult Succ: {formalId}",
-                                    args: new object[] { formalId, replyCount });
+                #region 第二次检查stop 如果tasklist中有stop的 响应获取失败的消息
+                if (stop)
+                {
+                    logger.LogWarning(message: $"Http request error id: [{formalId}]");
+                    helper.guidReplyResults[taskGUID] = Tuple.Create(true, "网络请求繁忙，请稍后再试", new List<Reply>());
+                }
+                #endregion
+                #region 获取成功
+                else
+                {
+                    logger.LogInformation(message: $"ReplyResult Succ: {formalId}",
+                                        args: new object[] { formalId, replyCount });
 
-                helper.guidReplyResults[taskGUID] = Tuple.Create(true, "", concurrentTotalList.Values.ToList());
+                    helper.guidReplyResults[taskGUID] = Tuple.Create(true, "", concurrentTotalList.Values.ToList());
+                }
+                #endregion
             });
 
             return taskGUID;
