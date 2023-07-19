@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading;
@@ -19,7 +20,16 @@ namespace BiliCLOnline.Utils
         /// <summary>
         /// 用于请求BilibiliAPI的httpclient
         /// </summary>
-        private readonly HttpClient BiliRequestClient = new();
+        private readonly HttpClient BiliRequestClient = new HttpClient
+        {
+            DefaultRequestHeaders =
+            {
+                UserAgent =
+                {
+                    new ProductInfoHeaderValue("Mozilla", "5.0")
+                }
+            }
+        };
 
         /// <summary>
         /// 用于请求验证码服务的httpclient
