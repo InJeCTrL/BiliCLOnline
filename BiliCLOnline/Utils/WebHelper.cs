@@ -115,7 +115,7 @@ namespace BiliCLOnline.Utils
                         responseMsg.EnsureSuccessStatusCode();
                         responseJSON = await responseMsg.Content.ReadFromJsonAsync<BilibiliAPIReturn<T>>();
 
-                        if (responseJSON.code == 412)
+                        if (responseJSON.code != 0)
                         {
                             throw new HttpRequestException(URL);
                         }
