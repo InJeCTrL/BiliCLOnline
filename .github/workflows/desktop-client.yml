@@ -29,6 +29,10 @@ jobs:
       run: dotnet publish -r win-x86 -p:PublishSingleFile=true --self-contained -c Release -p:IncludeAllContentForSelfExtract=true -p:PublishTrimmed=true
     - name: Publish osx-x64
       run: dotnet publish -r osx-x64 -p:PublishSingleFile=true --self-contained -c Release -p:IncludeAllContentForSelfExtract=true -p:PublishTrimmed=true
+    - name: Copy Web assets to local version
+      run: |
+        mkdir ./BiliCLOnline/bin/Release/net7.0/win-x64/publish/web
+        cp ./index.html ./BiliCLOnline/bin/Release/net7.0/win-x64/publish/web/index.html
     - name: Archive win-x64 Release
       uses: thedoctor0/zip-release@0.7.1
       with:
