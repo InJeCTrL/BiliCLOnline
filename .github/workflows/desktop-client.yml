@@ -33,6 +33,7 @@ jobs:
       run: |
         mkdir ./BiliCLOnline/bin/Release/net7.0/win-x64/publish/web
         cp ./index.html ./BiliCLOnline/bin/Release/net7.0/win-x64/publish/web/index.html
+        cp ./lottery.js ./BiliCLOnline/bin/Release/net7.0/win-x64/publish/web/lottery.js
     - name: Archive win-x64 Release
       uses: thedoctor0/zip-release@0.7.1
       with:
