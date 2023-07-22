@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using BiliCLOnline.IServices;
 using BiliCLOnline.Services;
 using BiliCLOnline.Utils;
@@ -6,6 +7,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 
@@ -33,7 +35,7 @@ namespace BiliCLOnline
 
             if (Configuration.GetValue<bool>("LocalVersion"))
             {
-                Helper.OpenURL($"https://injectrl.github.io/BiliCLOnline/index.html?localversion={port}");
+                Helper.OpenURL($"http://localhost:{port}/index.html?localversion={port}");
             }
             services.AddSingleton<WebHelper>();
             services.AddSingleton<Helper>();
@@ -106,6 +108,13 @@ namespace BiliCLOnline
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+            });
+
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(
+                    Path.Combine(env.ContentRootPath, "./web")),
+                RequestPath = ""
             });
         }
     }
