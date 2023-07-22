@@ -110,12 +110,15 @@ namespace BiliCLOnline
                 endpoints.MapControllers();
             });
 
-            app.UseStaticFiles(new StaticFileOptions
+            if (Configuration.GetValue<bool>("LocalVersion"))
             {
-                FileProvider = new PhysicalFileProvider(
-                    Path.Combine(env.ContentRootPath, "./web")),
-                RequestPath = ""
-            });
+                app.UseStaticFiles(new StaticFileOptions
+                {
+                    FileProvider = new PhysicalFileProvider(
+                        Path.Combine(env.ContentRootPath, "./web")),
+                    RequestPath = ""
+                });
+            }
         }
     }
 }
