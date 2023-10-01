@@ -33,7 +33,7 @@ jobs:
             tags: injectrl/biliclonline:latest
       -
           name: Login
-          uses: okteto/login@latest
+          uses: okteto/context@latest
           with:
             token: ${{ secrets.OKTETO_TOKEN }}
       -
