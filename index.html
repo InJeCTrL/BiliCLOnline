@@ -7,6 +7,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=yes" />
 	<link rel="stylesheet" type="text/css" href="https://www.layuicdn.com/layui-v2.5.7/css/layui.css" />
 	<script src="https://js.hcaptcha.com/1/api.js" async defer></script>
+	<script src="https://fastly.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
 	</head>
 		<style type="text/css">
 			td > .layui-table-cell {
@@ -179,6 +180,7 @@
 				<div class="layui-card layui-bg-gray">
 					<div class="layui-card-header">评论列表与抽奖</div>
 					<div class="layui-card-body">
+						<div id="replyTimeGraph" style="height: 400px;"></div>
 						<table class="layui-hide" id="replylist" lay-filter="replylist"></table>
 						<form class="layui-form layui-form-pane">
 							<div class="layui-form-item">
@@ -418,6 +420,74 @@
 				});
 			});
 
+			// 统计每小时评论数量
+			function renderReplyTimeGraph(replies) {
+				function _ASC(x, y) {
+					return x[0] - y[0];
+				}
+				let myChart = echarts.init(
+					document.getElementById('replyTimeGraph'), null, {
+					renderer: 'canvas',
+					useDirtyRect: false
+				});
+				let timeReplyCntMap = {};
+				for (let idxReply = 0; idxReply < replies.length; ++idxReply) {
+					let reply = replies[idxReply];
+					let replyTime = new Date(reply.pubTime);
+					replyTime.setMinutes(0, 0, 0);
+					let timeStamp = replyTime.getTime();
+
+					if (!timeReplyCntMap.hasOwnProperty(timeStamp)) {
+						timeReplyCntMap[timeStamp] = 0;
+					}
+
+					timeReplyCntMap[timeStamp] += 1;
+				}
+
+				let timeReplyCntList = [];
+				for (var key in timeReplyCntMap) {
+					timeReplyCntList.push([parseInt(key), timeReplyCntMap[key]]);
+				}
+				timeReplyCntList.sort(_ASC);
+
+				let option = {
+					title: {
+						text: '评论数-时间分布'
+					},
+					xAxis: {
+						type: 'time',
+						interval: 3600*1000*24,
+						axisLabel: {
+							show: true,
+							formatter: function (value, index) {
+								let date = new Date(value);
+								return [date.getFullYear(), date.getMonth() + 1, date.getDate()].join("-");
+							}
+						}
+					},
+					yAxis: {
+						name: '数量',
+						type: 'value'
+					},
+					series: [
+						{
+							data: timeReplyCntList,
+							type: 'bar',
+							areaStyle: {},
+							showSymbol: false
+						},
+					],
+					tooltip: {
+						trigger: 'axis'
+					}
+				};
+				if (option && typeof option === 'object') {
+					myChart.setOption(option);
+				}
+
+				window.addEventListener('resize', myChart.resize);
+			}
+
 			function refreshConfirmation(taskID) {
 				$.ajax({
 					url: (isLocalVersion ? localDomain : onlineDomain) + "/api/Confirmation/" + taskID,
@@ -432,6 +502,7 @@
 							$("#fetch_container").remove();
 							$('#lotterySetting').css('display', 'block');
 							replyData = data["data"];
+							renderReplyTimeGraph(replyData);
 							table.render({
 								elem: '#replylist',
 								cellMinWidth: 80,
