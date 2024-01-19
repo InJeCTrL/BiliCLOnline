@@ -7,7 +7,6 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
 using BiliCLOnline.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -173,7 +172,6 @@ namespace BiliCLOnline.Utils
                         if (!string.IsNullOrEmpty(cookie))
                         {
                             request.Headers.Add("Cookie", cookie);
-                            Console.WriteLine(cookie);
                         }
 
                         using var responseMsg = await BiliRequestClient.SendAsync(request);
