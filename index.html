@@ -1,284 +1,332 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 	<title>BiliCLOnline</title>
 	<meta charset="utf-8" />
 	<meta name="referrer" content="no-referrer" />
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=yes" />
+	<meta name="viewport"
+		content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=yes" />
 	<link rel="stylesheet" type="text/css" href="https://www.layuicdn.com/layui-v2.5.7/css/layui.css" />
 	<script src="https://js.hcaptcha.com/1/api.js" async defer></script>
+	<script src="https://cdn.bootcdn.net/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 	<script src="https://fastly.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
-	</head>
-		<style type="text/css">
-			td > .layui-table-cell {
-				height: auto;
-				white-space:normal;
-			}
-		</style>
-		<body class="layui-bg-blue">
-			<script src="https://www.layuicdn.com/layui-v2.5.7/layui.js"></script>
-			<div class="layui-fluid">
-				<ul class="layui-nav layui-bg-green" style="margin-bottom: 25px;">
-					<li class="layui-nav-item layui-this">B站评论区抽奖</li>
-					<li class="layui-nav-item layui-layout-right">
-						<a href="https://github.com/InJeCTrL/BiliCLOnline" target="_blank">
-							<img src="https://github.githubassets.com/favicons/favicon.svg" />
-						</a>
-					</li>
-				</ul>
-				<div class="layui-tab" lay-filter="tabs">
-					<ul class="layui-tab-title" style="display: none;">
-						<li class="layui-this" lay-id="first"></li>
-						<li lay-id="second"></li>
-						<li lay-id="third"></li>
-					</ul>
-					<div class="layui-tab-content">
-						<div class="layui-tab-item layui-show">
-							<div class="layui-row">
-								<div class="layui-col-xs12">
-									<form id="getbaseinfo" class="layui-card layui-bg-gray">
-										<div class="layui-card-header">设置目标稿件/动态</div>
-										<div class="layui-card-body">
-											<div class="layui-form-item">
-												<label class="layui-form-label">ID或URL</label>
-												<div class="layui-input-block">
-													<input type="text" id="pattern" name="pattern" autocomplete="off" placeholder="" class="layui-input">
-												</div>
-											</div>
-											<div id="captcha1" style="text-align:center" class="h-captcha" data-sitekey="cb9b8821-c860-4a95-96a9-07f71cc79937"></div>
-	<div>
-		<input id="set" type="button" value="OK" class="layui-btn layui-btn-normal layui-btn-lg layui-btn-radius layui-btn-fluid">
+</head>
+<div id="introd"
+	style="display: none; padding: 20px; line-height: 22px; background-color: #393D49; color: #fff; font-weight: 300;">
+	由于当前收到的捐助无法支持原有部署平台成本，已经将服务迁移到其它平台<br>网络环境可能不稳定，请谅解<br>项目维护与运行需要资金支持，望各方多多帮助<br>
+	<div style="text-align: center;"><a style="color: red;"
+			href="https://www.bilibili.com/v/pay/charge/?upmid=20580011&upurl=%2F%2Fspace.bilibili.com%2F20580011&upname=InJeCTrL&upavatar=https%3A%2F%2Fi2.hdslb.com%2Fbfs%2Fface%2F3f866eddf3ab8ca4a56539e5f8a666d6f0453343.jpg&oid=20580011&otype=up">-》B站充电捐助《-</a>
 	</div>
-	<div style="margin-top: 15px;">
-		说明：
-		<ul>
-			<li>
-				ID可以是AV号、BV号、CV号、动态ID中的任意一种
-			</li>
-			<li>
-				URL可以是视频稿件、专栏稿件、动态的网页链接或分享链接中的任意一种
+	<div style="text-align: center;"><a style="color: red;"
+			href="https://www.bilibili.com/v/pay/charge/?upmid=20580011&upurl=%2F%2Fspace.bilibili.com%2F20580011&upname=InJeCTrL&upavatar=https%3A%2F%2Fi2.hdslb.com%2Fbfs%2Fface%2F3f866eddf3ab8ca4a56539e5f8a666d6f0453343.jpg&oid=20580011&otype=up">-》B站充电捐助《-</a>
+	</div>
+	<div style="text-align: center;"><a style="color: red;"
+			href="https://www.bilibili.com/v/pay/charge/?upmid=20580011&upurl=%2F%2Fspace.bilibili.com%2F20580011&upname=InJeCTrL&upavatar=https%3A%2F%2Fi2.hdslb.com%2Fbfs%2Fface%2F3f866eddf3ab8ca4a56539e5f8a666d6f0453343.jpg&oid=20580011&otype=up">-》B站充电捐助《-</a>
+	</div>
+</div>
+<div id="loginwnd"
+	style="display: none; padding: 20px; line-height: 22px; background-color: #393D49; color: #fff; font-weight: 300; text-align: center;">
+	请使用Bilibili移动端扫码登录<br>二维码有效时间3分钟<br>登录成功该窗体自动消失<br>
+	<div id="loginqrcode" style="margin-top: 10px;"></div>
+</div>
+<style type="text/css">
+	td>.layui-table-cell {
+		height: auto;
+		white-space: normal;
+	}
+</style>
+
+<body class="layui-bg-blue">
+	<script src="https://www.layuicdn.com/layui-v2.5.7/layui.js"></script>
+	<div class="layui-fluid">
+		<ul class="layui-nav layui-bg-green" style="margin-bottom: 25px;">
+			<li class="layui-nav-item layui-this">B站评论区抽奖</li>
+			<li class="layui-nav-item layui-layout-right">
+				<a href="https://github.com/InJeCTrL/BiliCLOnline" target="_blank">
+					<img src="https://github.githubassets.com/favicons/favicon.svg" />
+				</a>
 			</li>
 		</ul>
-	</div>
-	</div>
-	</form>
-	</div>
-	</div>
-	</div>
-	<div class="layui-tab-item">
-		<div class="layui-row">
-			<div class="layui-col-xs12">
-				<div class="layui-card layui-bg-gray">
-					<div class="layui-card-header">目标信息</div>
-					<div class="layui-card-body">
-						<form class="layui-form layui-form-pane">
-							<div id="titleContainer" class="layui-form-item">
-								<label class="layui-form-label">稿件标题</label>
-								<div class="layui-input-block">
-									<input type="text" id="title" disabled="disabled" class="layui-input">
-								</div>
-							</div>
-							<div class="layui-form-item">
-								<div class="layui-inline">
-									<label class="layui-form-label">作品ID</label>
-									<div class="layui-input-inline">
-										<input type="text" id="id" disabled="disabled" class="layui-input">
+		<div class="layui-tab" lay-filter="tabs">
+			<ul class="layui-tab-title" style="display: none;">
+				<li class="layui-this" lay-id="first"></li>
+				<li lay-id="second"></li>
+				<li lay-id="third"></li>
+			</ul>
+			<div class="layui-tab-content">
+				<div class="layui-tab-item layui-show">
+					<div class="layui-row">
+						<div class="layui-col-xs12">
+							<form id="getbaseinfo" class="layui-card layui-bg-gray">
+								<div class="layui-card-header">设置目标稿件/动态</div>
+								<div class="layui-card-body">
+									<div class="layui-form-item">
+										<label class="layui-form-label">ID或URL</label>
+										<div class="layui-input-block">
+											<input type="text" id="pattern" name="pattern" autocomplete="off"
+												placeholder="" class="layui-input">
+										</div>
+									</div>
+									<div id="captcha1" style="text-align:center" class="h-captcha"
+										data-sitekey="cb9b8821-c860-4a95-96a9-07f71cc79937"></div>
+									<div>
+										<input id="set" type="button" value="OK"
+											class="layui-btn layui-btn-normal layui-btn-lg layui-btn-radius layui-btn-fluid">
+									</div>
+									<div style="margin-top: 15px;">
+										说明：
+										<ul>
+											<li>
+												ID可以是AV号、BV号、CV号、动态ID中的任意一种
+											</li>
+											<li>
+												URL可以是视频稿件、专栏稿件、动态的网页链接或分享链接中的任意一种
+											</li>
+										</ul>
 									</div>
 								</div>
-								<div class="layui-inline">
-									<label class="layui-form-label">类型</label>
-									<div class="layui-input-inline">
-										<input type="text" id="type" disabled="disabled" class="layui-input">
-									</div>
-								</div>
-								<div class="layui-inline">
-									<a id="workurl" href="" target="_blank" style="text-align: center;">
-										<div>点此跳转到作品</div>
-									</a>
-								</div>
-							</div>
-							<div class="layui-form-item">
-								<div class="layui-inline">
-									<label class="layui-form-label">作者用户ID</label>
-									<div class="layui-input-inline">
-										<input type="text" id="uid" disabled="disabled" class="layui-input">
-									</div>
-								</div>
-								<div class="layui-inline">
-									<label class="layui-form-label">作者用户名</label>
-									<div class="layui-input-inline">
-										<input type="text" id="uname" disabled="disabled" class="layui-input">
-									</div>
-								</div>
-								<div id="faceContainer" class="layui-inline">
-									<a id="authorhomepage" href="" target="_blank">
-										<img id="face" width="50" height="50" src="" />
-									</a>
-									（点击用户头像进入主页）
-								</div>
-							</div>
-							<div class="layui-form-item">
-								<div id="viewContainer" class="layui-inline">
-									<label class="layui-form-label">查看量</label>
-									<div class="layui-input-inline">
-										<input type="text" id="view" disabled="disabled" class="layui-input">
-									</div>
-								</div>
-								<div class="layui-inline">
-									<label class="layui-form-label">点赞数</label>
-									<div class="layui-input-inline">
-										<input type="text" id="like" disabled="disabled" class="layui-input">
-									</div>
-								</div>
-								<div class="layui-inline">
-									<label class="layui-form-label">分享数</label>
-									<div class="layui-input-inline">
-										<input type="text" id="share" disabled="disabled" class="layui-input">
-									</div>
-								</div>
-								<div id="collectContainer" class="layui-inline">
-									<label class="layui-form-label">收藏数</label>
-									<div class="layui-input-inline">
-										<input type="text" id="collect" disabled="disabled" class="layui-input">
-									</div>
-								</div>
-								<div id="coinContainer" class="layui-inline">
-									<label class="layui-form-label">投币数</label>
-									<div class="layui-input-inline">
-										<input type="text" id="coin" disabled="disabled" class="layui-input">
-									</div>
-								</div>
-								<div class="layui-inline">
-									<label class="layui-form-label">总评论数</label>
-									<div class="layui-input-inline">
-										<input type="text" id="comment" disabled="disabled" class="layui-input">
-									</div>
-								</div>
-								<div id="pubContainer" class="layui-inline">
-									<label class="layui-form-label">发布时间</label>
-									<div class="layui-input-inline">
-										<input type="text" id="pubtime" disabled="disabled" class="layui-input">
-									</div>
-								</div>
-							</div>
-							<div id="fetch_container">
-								<div id="captcha2" style="text-align:center" class="h-captcha" data-sitekey="94bcabb4-f991-44ab-8dde-3b7b9fc40849"></div>
-								<div>
-									<button id="fetch" type="button" class="layui-btn layui-btn-normal layui-btn-lg layui-btn-radius layui-btn-fluid">获取评论</button>
-								</div>
-								<div style="margin-top: 15px;">
-									提示：不会获取评论区中的楼中楼！
-								</div>
-							</div>
-						</form>
+							</form>
+						</div>
 					</div>
+				</div>
+				<div class="layui-tab-item">
+					<div class="layui-row">
+						<div class="layui-col-xs12">
+							<div class="layui-card layui-bg-gray">
+								<div class="layui-card-header">目标信息</div>
+								<div class="layui-card-body">
+									<form class="layui-form layui-form-pane">
+										<div id="titleContainer" class="layui-form-item">
+											<label class="layui-form-label">稿件标题</label>
+											<div class="layui-input-block">
+												<input type="text" id="title" disabled="disabled" class="layui-input">
+											</div>
+										</div>
+										<div class="layui-form-item">
+											<div class="layui-inline">
+												<label class="layui-form-label">作品ID</label>
+												<div class="layui-input-inline">
+													<input type="text" id="id" disabled="disabled" class="layui-input">
+												</div>
+											</div>
+											<div class="layui-inline">
+												<label class="layui-form-label">类型</label>
+												<div class="layui-input-inline">
+													<input type="text" id="type" disabled="disabled"
+														class="layui-input">
+												</div>
+											</div>
+											<div class="layui-inline">
+												<a id="workurl" href="" target="_blank" style="text-align: center;">
+													<div>点此跳转到作品</div>
+												</a>
+											</div>
+										</div>
+										<div class="layui-form-item">
+											<div class="layui-inline">
+												<label class="layui-form-label">作者用户ID</label>
+												<div class="layui-input-inline">
+													<input type="text" id="uid" disabled="disabled" class="layui-input">
+												</div>
+											</div>
+											<div class="layui-inline">
+												<label class="layui-form-label">作者用户名</label>
+												<div class="layui-input-inline">
+													<input type="text" id="uname" disabled="disabled"
+														class="layui-input">
+												</div>
+											</div>
+											<div id="faceContainer" class="layui-inline">
+												<a id="authorhomepage" href="" target="_blank">
+													<img id="face" width="50" height="50" src="" />
+												</a>
+												（点击用户头像进入主页）
+											</div>
+										</div>
+										<div class="layui-form-item">
+											<div id="viewContainer" class="layui-inline">
+												<label class="layui-form-label">查看量</label>
+												<div class="layui-input-inline">
+													<input type="text" id="view" disabled="disabled"
+														class="layui-input">
+												</div>
+											</div>
+											<div class="layui-inline">
+												<label class="layui-form-label">点赞数</label>
+												<div class="layui-input-inline">
+													<input type="text" id="like" disabled="disabled"
+														class="layui-input">
+												</div>
+											</div>
+											<div class="layui-inline">
+												<label class="layui-form-label">分享数</label>
+												<div class="layui-input-inline">
+													<input type="text" id="share" disabled="disabled"
+														class="layui-input">
+												</div>
+											</div>
+											<div id="collectContainer" class="layui-inline">
+												<label class="layui-form-label">收藏数</label>
+												<div class="layui-input-inline">
+													<input type="text" id="collect" disabled="disabled"
+														class="layui-input">
+												</div>
+											</div>
+											<div id="coinContainer" class="layui-inline">
+												<label class="layui-form-label">投币数</label>
+												<div class="layui-input-inline">
+													<input type="text" id="coin" disabled="disabled"
+														class="layui-input">
+												</div>
+											</div>
+											<div class="layui-inline">
+												<label class="layui-form-label">总评论数</label>
+												<div class="layui-input-inline">
+													<input type="text" id="comment" disabled="disabled"
+														class="layui-input">
+												</div>
+											</div>
+											<div id="pubContainer" class="layui-inline">
+												<label class="layui-form-label">发布时间</label>
+												<div class="layui-input-inline">
+													<input type="text" id="pubtime" disabled="disabled"
+														class="layui-input">
+												</div>
+											</div>
+										</div>
+										<div id="fetch_container">
+											<div id="captcha2" style="text-align:center" class="h-captcha"
+												data-sitekey="94bcabb4-f991-44ab-8dde-3b7b9fc40849"></div>
+											<div>
+												<button id="fetch" type="button"
+													class="layui-btn layui-btn-normal layui-btn-lg layui-btn-radius layui-btn-fluid">获取评论</button>
+											</div>
+											<div style="margin-top: 15px;">
+												提示：不会获取评论区中的楼中楼！
+											</div>
+										</div>
+									</form>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div id="lotterySetting" style="display: none;margin-top: 10px;" class="layui-row">
+						<div class="layui-col-xs12">
+							<div class="layui-card layui-bg-gray">
+								<div class="layui-card-header">评论列表与抽奖</div>
+								<div class="layui-card-body">
+									<div id="replyTimeGraph" style="height: 400px;"></div>
+									<table class="layui-hide" id="replylist" lay-filter="replylist"></table>
+									<form class="layui-form layui-form-pane">
+										<div class="layui-form-item">
+											<div class="layui-inline">
+												<label class="layui-form-label">设定中奖数</label>
+												<div class="layui-input-inline">
+													<input type="text" id="count" class="layui-input">
+												</div>
+											</div>
+										</div>
+										<hr />
+										<div class="layui-form-item" pane>
+											<label class="layui-form-label">筛选等级</label>
+											<div class="layui-input-block">
+												<input type="checkbox" name="level" title="Lv0" value="0">
+												<input type="checkbox" name="level" title="Lv1" value="1" checked>
+												<input type="checkbox" name="level" title="Lv2" value="2" checked>
+												<input type="checkbox" name="level" title="Lv3" value="3" checked>
+												<input type="checkbox" name="level" title="Lv4" value="4" checked>
+												<input type="checkbox" name="level" title="Lv5" value="5" checked>
+												<input type="checkbox" name="level" title="Lv6" value="6" checked>
+											</div>
+										</div>
+										<div>* 0级用户为抽奖号的风险较大，默认不会抽取</div>
+										<hr />
+										<div class="layui-form-item">
+											<div class="layui-inline">
+												<label class="layui-form-label" style="width: 130px">限制评论时间</label>
+												<div class="layui-input-inline">
+													<input type="checkbox" id="limittime" lay-skin="switch"
+														lay-text="是|否">
+												</div>
+											</div>
+										</div>
+										<div class="layui-form-item">
+											<label class="layui-form-label">时间范围</label>
+											<div class="layui-input-block">
+												<input type="text" id="timerange" class="layui-input"
+													placeholder="点击选择">
+											</div>
+										</div>
+										<hr />
+										<div class="layui-form-item">
+											<div class="layui-inline">
+												<label class="layui-form-label" style="width: 130px">允许重复UID</label>
+												<div class="layui-input-inline">
+													<input type="checkbox" id="duplicateduid" lay-skin="switch"
+														lay-text="是|否">
+												</div>
+											</div>
+										</div>
+										<hr />
+										<div class="layui-form-item">
+											<div class="layui-inline">
+												<label class="layui-form-label" style="width: 130px">评论内容去重 <span
+														id="dedupreplytip"
+														style="cursor: pointer;color: blue;">?</span></label>
+												<div class="layui-input-inline">
+													<input type="checkbox" id="deduplicatedreply" lay-skin="switch"
+														lay-text="是|否">
+												</div>
+											</div>
+										</div>
+										<hr />
+										<div class="layui-form-item">
+											<div class="layui-inline">
+												<label class="layui-form-label"
+													style="width: 220px">仅筛选包含特定关键词的评论</label>
+												<div class="layui-input-inline">
+													<input type="checkbox" id="onlyspecified" lay-skin="switch"
+														lay-text="是|否">
+												</div>
+											</div>
+										</div>
+										<div class="layui-form-item">
+											<label class="layui-form-label">关键词</label>
+											<div class="layui-input-block">
+												<input type="text" class="layui-input" id="contentspecified">
+											</div>
+										</div>
+										<hr />
+										<div>
+											<button id="lottery" type="button"
+												class="layui-btn layui-bg-red layui-btn-lg layui-btn-radius layui-btn-fluid">抽奖</button>
+										</div>
+									</form>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="layui-tab-item">
+					<div class="layui-row">
+						<div class="layui-col-xs6">
+							<button id="back"
+								class="layui-btn layui-bg-cyan layui-btn-lg layui-btn-radius layui-btn-fluid">返回</button>
+						</div>
+						<div class="layui-col-xs6">
+							<button id="allopen"
+								class="layui-btn layui-bg-red layui-btn-lg layui-btn-radius layui-btn-fluid">全部开启</button>
+						</div>
+					</div>
+					<table class="layui-hide" id="luckylist" lay-filter="luckylist"></table>
 				</div>
 			</div>
 		</div>
-		<div id="lotterySetting" style="display: none;margin-top: 10px;" class="layui-row">
-			<div class="layui-col-xs12">
-				<div class="layui-card layui-bg-gray">
-					<div class="layui-card-header">评论列表与抽奖</div>
-					<div class="layui-card-body">
-						<div id="replyTimeGraph" style="height: 400px;"></div>
-						<table class="layui-hide" id="replylist" lay-filter="replylist"></table>
-						<form class="layui-form layui-form-pane">
-							<div class="layui-form-item">
-								<div class="layui-inline">
-									<label class="layui-form-label">设定中奖数</label>
-									<div class="layui-input-inline">
-										<input type="text" id="count" class="layui-input">
-									</div>
-								</div>
-							</div>
-							<hr />
-							<div class="layui-form-item" pane>
-								<label class="layui-form-label">筛选等级</label>
-								<div class="layui-input-block">
-									<input type="checkbox" name="level" title="Lv0" value="0">
-									<input type="checkbox" name="level" title="Lv1" value="1" checked>
-									<input type="checkbox" name="level" title="Lv2" value="2" checked>
-									<input type="checkbox" name="level" title="Lv3" value="3" checked>
-									<input type="checkbox" name="level" title="Lv4" value="4" checked>
-									<input type="checkbox" name="level" title="Lv5" value="5" checked>
-									<input type="checkbox" name="level" title="Lv6" value="6" checked>
-								</div>
-							</div>
-							<div>* 0级用户为抽奖号的风险较大，默认不会抽取</div>
-							<hr />
-							<div class="layui-form-item">
-								<div class="layui-inline">
-									<label class="layui-form-label" style="width: 130px">限制评论时间</label>
-									<div class="layui-input-inline">
-										<input type="checkbox" id="limittime" lay-skin="switch" lay-text="是|否">
-									</div>
-								</div>
-							</div>
-							<div class="layui-form-item">
-								<label class="layui-form-label">时间范围</label>
-								<div class="layui-input-block">
-									<input type="text" id="timerange" class="layui-input" placeholder="点击选择">
-								</div>
-							</div>
-							<hr />
-							<div class="layui-form-item">
-								<div class="layui-inline">
-									<label class="layui-form-label" style="width: 130px">允许重复UID</label>
-									<div class="layui-input-inline">
-										<input type="checkbox" id="duplicateduid" lay-skin="switch" lay-text="是|否">
-									</div>
-								</div>
-							</div>
-							<hr />
-							<div class="layui-form-item">
-								<div class="layui-inline">
-									<label class="layui-form-label" style="width: 130px">评论内容去重 <span id="dedupreplytip" style="cursor: pointer;color: blue;">?</span></label>
-									<div class="layui-input-inline">
-										<input type="checkbox" id="deduplicatedreply" lay-skin="switch" lay-text="是|否">
-									</div>
-								</div>
-							</div>
-							<hr />
-							<div class="layui-form-item">
-								<div class="layui-inline">
-									<label class="layui-form-label" style="width: 220px">仅筛选包含特定关键词的评论</label>
-									<div class="layui-input-inline">
-										<input type="checkbox" id="onlyspecified" lay-skin="switch" lay-text="是|否">
-									</div>
-								</div>
-							</div>
-							<div class="layui-form-item">
-								<label class="layui-form-label">关键词</label>
-								<div class="layui-input-block">
-									<input type="text" class="layui-input" id="contentspecified">
-								</div>
-							</div>
-							<hr />
-							<div>
-								<button id="lottery" type="button" class="layui-btn layui-bg-red layui-btn-lg layui-btn-radius layui-btn-fluid">抽奖</button>
-							</div>
-						</form>
-					</div>
-				</div>
-			</div>
+		<div style="text-align: center;padding-bottom: 10px;">
+			Running .NET 7.0 <span id="envLbl">on K8s (Okteto)<br>若频繁提示服务不可用，请运行<a
+					href="https://github.com/InJeCTrL/BiliCLOnline/releases/tag/LocalVersion">本地版本</a></span>
 		</div>
-	</div>
-	<div class="layui-tab-item">
-		<div class="layui-row">
-			<div class="layui-col-xs6">
-				<button id="back" class="layui-btn layui-bg-cyan layui-btn-lg layui-btn-radius layui-btn-fluid">返回</button>
-			</div>
-			<div class="layui-col-xs6">
-				<button id="allopen" class="layui-btn layui-bg-red layui-btn-lg layui-btn-radius layui-btn-fluid">全部开启</button>
-			</div>
-		</div>
-		<table class="layui-hide" id="luckylist" lay-filter="luckylist"></table>
-	</div>
-	</div>
-	</div>
-	<div style="text-align: center;padding-bottom: 10px;">
-		Running .NET 7.0 <span id="envLbl">on K8s (Okteto)<br>若频繁提示服务不可用，请运行<a href="https://github.com/InJeCTrL/BiliCLOnline/releases/tag/LocalVersion">本地版本</a></span>
-	</div>
 	</div>
 	<script type="text/html" id="tools">
 		<button lay-event="open" class="layui-btn layui-bg-red layui-btn-lg layui-btn-fluid open">开</button>
@@ -288,7 +336,10 @@
 		var replyData = [];
 		var startDateTime;
 		var endDateTime;
+		var fetchCmtCnt = 0;
+		var loginKey = "";
 		var totalUrl = window.location.href;
+		var qrcode = new QRCode(document.getElementById("loginqrcode"));
 		var isLocalVersion = (totalUrl.indexOf("?localversion") != -1);
 		var onlineDomain = "https://biliclonline-injectrl.cloud.okteto.net";
 		var localDomain = "http://127.0.0.1";
@@ -318,7 +369,7 @@
 				, btn: ['了解']
 				, btnAlign: 'c'
 				, moveType: 1
-				, content: '<div style="padding: 20px; line-height: 22px; background-color: #393D49; color: #fff; font-weight: 300;">由于当前收到的捐助无法支持原有部署平台成本，已经将服务迁移到其它平台<br>网络环境可能不稳定，请谅解<br>项目维护与运行需要资金支持，望各方多多帮助<br><div style="text-align: center;"><a style="color: red;" href="https://www.bilibili.com/v/pay/charge/?upmid=20580011&upurl=%2F%2Fspace.bilibili.com%2F20580011&upname=InJeCTrL&upavatar=https%3A%2F%2Fi2.hdslb.com%2Fbfs%2Fface%2F3f866eddf3ab8ca4a56539e5f8a666d6f0453343.jpg&oid=20580011&otype=up">-》B站充电捐助《-</a></div><div style="text-align: center;"><a style="color: red;" href="https://www.bilibili.com/v/pay/charge/?upmid=20580011&upurl=%2F%2Fspace.bilibili.com%2F20580011&upname=InJeCTrL&upavatar=https%3A%2F%2Fi2.hdslb.com%2Fbfs%2Fface%2F3f866eddf3ab8ca4a56539e5f8a666d6f0453343.jpg&oid=20580011&otype=up">-》B站充电捐助《-</a></div><div style="text-align: center;"><a style="color: red;" href="https://www.bilibili.com/v/pay/charge/?upmid=20580011&upurl=%2F%2Fspace.bilibili.com%2F20580011&upname=InJeCTrL&upavatar=https%3A%2F%2Fi2.hdslb.com%2Fbfs%2Fface%2F3f866eddf3ab8ca4a56539e5f8a666d6f0453343.jpg&oid=20580011&otype=up">-》B站充电捐助《-</a></div></div>'
+				, content: $("#introd")
 				, success: function (layero) {
 					layer.close(0);
 				}
@@ -456,7 +507,7 @@
 					},
 					xAxis: {
 						type: 'time',
-						interval: 3600*1000*24,
+						interval: 3600 * 1000 * 24,
 						axisLabel: {
 							show: true,
 							formatter: function (value, index) {
@@ -543,22 +594,74 @@
 				});
 			}
 
-			$("#fetch").click(function () {
-				$("#fetch_container").hide();
-
-				layer.msg("请耐心等待，不要刷新或返回");
+			function fetchComments() {
+				++fetchCmtCnt;
 				$.ajax({
-					url: (isLocalVersion ? localDomain : onlineDomain) + "/api/Reply/" + Id,
+					url: (isLocalVersion ? localDomain : onlineDomain) + "/api/Reply/" + Id + "/" + loginKey,
 					type: "get",
 					headers: { "h-captcha-response": isLocalVersion ? "" : $("#captcha2")[0].children[0].attributes["data-hcaptcha-response"].nodeValue },
 					crossDomain: true,
 					success: function (data) {
-						if (data["code"] != 0) {
+						// 未登录
+						if (data["code"] == 2) {
+							if (fetchCmtCnt > 60) {
+								$("#loginstatus").text("二维码过期，请刷新页面");
+								return;
+							}
+							$("#loginstatus").text(data["message"]);
+							setTimeout(fetchComments, 3000);
+						}
+						// 其它立即错误
+						else if (data["code"] != 0) {
 							$("#fetch_container").show();
 							layer.msg(data["message"]);
 						}
 						else {
+							layer.close(layer.index);
 							refreshConfirmation(data["data"]);
+						}
+					},
+					error: function (j, e) {
+						if (j.status == 400) {
+							layer.msg("参数错误");
+						}
+						else {
+							layer.msg("服务暂不可用");
+						}
+						console.log(e);
+					},
+				});
+			}
+
+			$("#fetch").click(function () {
+				$.ajax({
+					url: (isLocalVersion ? localDomain : onlineDomain) + "/api/login/qrcode",
+					type: "get",
+					crossDomain: true,
+					success: function (data) {
+						if (data["code"] != 0) {
+							layer.msg(data["message"]);
+						}
+						else {
+							$("#fetch_container").hide();
+							loginKey = data["message"];
+
+							layer.open({
+								type: 1
+								, title: false
+								, closeBtn: false
+								, area: '300px;'
+								, shade: 0.8
+								, id: 'LAY_out'
+								, resize: false
+								, btnAlign: 'c'
+								, moveType: 1
+								, content: $("#loginwnd")
+							});
+							qrcode.makeCode(data["data"]);
+
+							fetchCmtCnt = 0;
+							fetchComments();
 						}
 					},
 					error: function (j, e) {
@@ -648,5 +751,6 @@
 			});
 		});
 	</script>
-	</body>
+</body>
+
 </html>

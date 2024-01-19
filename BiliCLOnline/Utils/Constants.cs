@@ -19,6 +19,12 @@ namespace BiliCLOnline.Utils
         public const string DynamicURLTemplate =
             "https://t.bilibili.com/{0}";
 
+        public const string LoginQRCodeAPI =
+            "https://passport.bilibili.com/x/passport-login/web/qrcode/generate";
+
+        public const string LoginCheckAPITemplate =
+            "https://passport.bilibili.com/x/passport-login/web/qrcode/poll?qrcode_key={0}";
+
         public const string HCaptchaVerifyURL =
             "https://hcaptcha.com/siteverify";
 

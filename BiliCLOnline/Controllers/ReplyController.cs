@@ -21,12 +21,23 @@ namespace BiliCLOnline.Controllers
         /// 执行获取评论区列表任务
         /// </summary>
         /// <param name="id">评论承载者标准标识符</param>
+        /// <param name="key">Bilibili登录标识</param>
         /// <returns></returns>
-        [HttpGet("{id}")]
-        public async Task<ActionResult<ResultWrapper>> ExecuteFetchReplyResult(string id)
+        [HttpGet("{id}/{key}")]
+        public async Task<ActionResult<ResultWrapper>> ExecuteFetchReplyResult(string id, string key)
         {
             // 执行获取评论列表任务
-            var taskID = await replyResult.InvokeGetListTask(id);
+            var taskID = await replyResult.InvokeGetListTask(id, key);
+            if (taskID == "NOT_LOGGED_IN")
+            {
+                return new ResultWrapper
+                {
+                    Code = 2,
+                    Count = 0,
+                    Data = null,
+                    Message = "暂未检测到登录"
+                };
+            }
 
             return new ResultWrapper
             {

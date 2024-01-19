@@ -11,7 +11,7 @@ namespace BiliCLOnline.IServices
         /// 执行获取评论列表的任务
         /// </summary>
         /// <returns>任务ID</returns>
-        public Task<string> InvokeGetListTask(string id);
+        public Task<string> InvokeGetListTask(string id, string key);
 
         /// <summary>
         /// 获取任务执行状态

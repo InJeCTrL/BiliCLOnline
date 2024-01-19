@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using BiliCLOnline.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using static BiliCLOnline.Utils.Constants;
@@ -94,12 +95,69 @@ namespace BiliCLOnline.Utils
         }
 
         /// <summary>
+        /// 获取Bilibili登录用二维码
+        /// </summary>
+        /// <returns><二维码内容, Bilibili登录标识></returns>
+        public async Task<Tuple<string, string>> GetBilibiliLoginQRCode()
+        {
+            try
+            {
+                using var response = await BiliRequestClient.GetAsync(LoginQRCodeAPI);
+                response.EnsureSuccessStatusCode();
+                var loginGenerateData = await response.Content.ReadFromJsonAsync<BilibiliAPIReturn<LoginGenerateData>>();
+                if (loginGenerateData.code != 0)
+                {
+                    return Tuple.Create(string.Empty, string.Empty);
+                }
+
+                return Tuple.Create(loginGenerateData.data.url, loginGenerateData.data.qrcode_key);
+            }
+            catch (Exception ex) when (ex is HttpRequestException || ex is JsonException)
+            {
+                logger.LogError(message: ex.ToString());
+            }
+
+            return Tuple.Create(string.Empty, string.Empty);
+        }
+
+        /// <summary>
+        /// 校验Bilibili登录状态
+        /// </summary>
+        /// <param name="key">Bilibili登录标识</param>
+        /// <returns><是否通过验证, Cookie></returns>
+        public async Task<Tuple<bool, string>> VerifyBilibiliLogin(string key)
+        {
+            try
+            {
+                using var response = await BiliRequestClient.GetAsync(string.Format(LoginCheckAPITemplate, key));
+                response.EnsureSuccessStatusCode();
+
+                var loginCheckData = await response.Content.ReadFromJsonAsync<BilibiliAPIReturn<LoginCheckData>>();
+                if (loginCheckData.data.code != 0)
+                {
+                    return Tuple.Create(false, string.Empty);
+                }
+
+                var cookie = loginCheckData.data.url.Replace("&", ";");
+                cookie = cookie[(cookie.IndexOf("?") + 1)..];
+
+                return Tuple.Create(true, cookie);
+            }
+            catch (Exception ex) when (ex is HttpRequestException || ex is JsonException)
+            {
+                logger.LogError(message: ex.ToString());
+            }
+
+            return Tuple.Create(false, string.Empty);
+        }
+
+        /// <summary>
         /// 获取B站API的响应JSON
         /// </summary>
         /// <param name="URL">B站APIURL</param>
         /// <typeparam name="T">IReturnData</typeparam>
         /// <returns>响应JSON</returns>
-        public async Task<BilibiliAPIReturn<T>> GetResponse<T>(string URL) where T : ReturnData
+        public async Task<BilibiliAPIReturn<T>> GetResponse<T>(string URL, string cookie) where T : ReturnData
         {
             BilibiliAPIReturn<T> responseJSON = default;
 
@@ -111,7 +169,14 @@ namespace BiliCLOnline.Utils
                 {
                     try
                     {
-                        using var responseMsg = await BiliRequestClient.GetAsync(URL);
+                        using var request = new HttpRequestMessage(HttpMethod.Get, URL);
+                        if (!string.IsNullOrEmpty(cookie))
+                        {
+                            request.Headers.Add("Cookie", cookie);
+                            Console.WriteLine(cookie);
+                        }
+
+                        using var responseMsg = await BiliRequestClient.SendAsync(request);
                         responseMsg.EnsureSuccessStatusCode();
                         responseJSON = await responseMsg.Content.ReadFromJsonAsync<BilibiliAPIReturn<T>>();
 

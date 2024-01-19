@@ -162,4 +162,23 @@ namespace BiliCLOnline.Models
         }
         public Cursor cursor { get; set; }
     }
+
+    /// <summary>
+    /// 登录状态检查数据
+    /// </summary>
+    public class LoginCheckData : ReturnData
+    {
+        public int code { get; set; }
+        public string message { get; set; }
+        public string url { get; set; }
+    }
+
+    /// <summary>
+    /// 登录凭证生成数据
+    /// </summary>
+    public class LoginGenerateData : ReturnData
+    {
+        public string qrcode_key { get; set; }
+        public string url { get; set; }
+    }
 }

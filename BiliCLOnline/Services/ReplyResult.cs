@@ -7,6 +7,7 @@ using BiliCLOnline.IServices;
 using BiliCLOnline.Models;
 using BiliCLOnline.Utils;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualBasic;
 using static BiliCLOnline.Utils.Constants;
 
 namespace BiliCLOnline.Services
@@ -86,7 +87,7 @@ namespace BiliCLOnline.Services
             }
         }
 
-        public async Task<string> InvokeGetListTask(string formalId)
+        public async Task<string> InvokeGetListTask(string formalId, string key)
         {
             var taskGUID = Guid.NewGuid().ToString();
             helper.guidReplyResults[taskGUID] = Tuple.Create(false, "", new List<Reply>());
@@ -144,6 +145,21 @@ namespace BiliCLOnline.Services
             }
             #endregion
 
+            var cookie = string.Empty;
+
+            #region 验证Bilibili登录状态
+            var loginData = await webHelper.VerifyBilibiliLogin(key);
+            if (!loginData.Item1)
+            {
+                logger.LogWarning(message: $"Invalid login key: [{key}]");
+                helper.guidReplyResults.TryRemove(taskGUID, out _);
+
+                return "NOT_LOGGED_IN";
+            }
+
+            cookie = loginData.Item2;
+            #endregion
+
             // 评论列表
             var concurrentTotalList = new ConcurrentDictionary<string, Reply>();
 
@@ -154,7 +170,7 @@ namespace BiliCLOnline.Services
             var replyURLPrefix = helper.GetReplyURLPrefix(workBasics.Item2, workBasics.Item3);
             
             #region 获取评论总条数和首个next
-            var firstPage = await webHelper.GetResponse<ReplyData>($"{ replyAPIURLPrefix }");
+            var firstPage = await webHelper.GetResponse<ReplyData>($"{ replyAPIURLPrefix }", cookie);
             if (firstPage == default)
             {
                 logger.LogWarning(message: $"Http request error id: [{formalId}]");
@@ -201,7 +217,7 @@ namespace BiliCLOnline.Services
                         }
 
                         var replyRequestUrl = $"{replyAPIURLPrefix}{next}";
-                        var replyAPIReturn = await webHelper.GetResponse<ReplyData>(replyRequestUrl);
+                        var replyAPIReturn = await webHelper.GetResponse<ReplyData>(replyRequestUrl, cookie);
                         if (replyAPIReturn == default)
                         {
                             logger.LogWarning(message: $"Http request error id: [{formalId}], url: [{replyRequestUrl}]");
