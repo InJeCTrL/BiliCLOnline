@@ -324,7 +324,7 @@
 			</div>
 		</div>
 		<div style="text-align: center;padding-bottom: 10px;">
-			Running .NET 7.0 <span id="envLbl">on K8s (Okteto)<br>若频繁提示服务不可用，请运行<a
+			Running .NET 7.0 <span id="envLbl">on AWS-EC2 via Docker<br>若频繁提示服务不可用，请运行<a
 					href="https://github.com/InJeCTrL/BiliCLOnline/releases/tag/LocalVersion">本地版本</a></span>
 		</div>
 	</div>
@@ -341,7 +341,7 @@
 		var totalUrl = window.location.href;
 		var qrcode = new QRCode(document.getElementById("loginqrcode"));
 		var isLocalVersion = (totalUrl.indexOf("?localversion") != -1);
-		var onlineDomain = "https://biliclonline-injectrl.cloud.okteto.net";
+		var onlineDomain = "https://biliclonline.injectrl.app";
 		var localDomain = "http://127.0.0.1";
 
 		if (isLocalVersion) {
