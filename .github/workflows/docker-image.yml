@@ -1,4 +1,4 @@
-name: Docker Image & K8s CI/CD
+name: Docker Image & Container CI/CD
 
 on:
   push:
@@ -32,29 +32,16 @@ jobs:
             push: true
             tags: injectrl/biliclonline:latest
       -
-          name: Login
-          uses: okteto/context@latest
-          with:
-            token: ${{ secrets.OKTETO_TOKEN }}
+          name: Release server key
+          run: echo ${{ secrets.SERVER_KEY }} > ./key.pem
       -
-          name: Activate namespace
-          uses: okteto/namespace@latest
+          name: Login server & Deploy
+          uses: appleboy/ssh-action@v1.0.3
           with:
-            namespace: ${{ secrets.OKTETO_NAMESPACE }}
-      -
-          name: Set secrets for k8s manifest
-          uses: datamonsters/replace-action@v2
-          with:
-            files: './k8s.yml'
-            replacements: '$HCaptchaSecret=${{ secrets.HCAPTCHASECRET }},$CorsTarget=${{ secrets.CORSTARGET }}'
-      -
-          name: Deploy
-          uses: okteto/apply@latest
-          with:
-            manifest: k8s.yml
-      -
-          name: Push changes
-          uses: okteto/push@latest
-          with:
-            namespace: ${{ secrets.OKTETO_NAMESPACE }}
-            name: biliclonline
+            host: ${{ secrets.SERVER_ROUTE }}
+            key_path: ./key.pem
+            script: |
+              sudo docker stop bcl
+              sudo docker rm bcl
+              sudo docker pull injectrl/biliclonline:latest
+              sudo docker run -d -it --name bcl -p 5000:5000 -e HCaptchaSecret="${{ secrets.HCAPTCHASECRET }}" -e CorsTarget="${{ secrets.CORSTARGET }}" -e injectrl/biliclonline:latest
