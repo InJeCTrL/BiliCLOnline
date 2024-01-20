@@ -44,5 +44,24 @@ namespace BiliCLOnline.Controllers
                 Message = qrContent.Item2
             };
         }
+
+        /// <summary>
+        /// 获取登录结果
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("result/{key}")]
+        public async Task<ActionResult<ResultWrapper>> GetResult(string key)
+        {
+            // 获取Bilibili登录用二维码
+            var result = await login.GetLoginResult(key);
+            
+            return new ResultWrapper
+            {
+                Code = result.Item1 ? 0 : -1,
+                Count = 0,
+                Data = result.Item2,
+                Message = result.Item1 ? "" : "暂未检测到登录"
+            };
+        }
     }
 }

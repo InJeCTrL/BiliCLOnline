@@ -336,8 +336,9 @@
 		var replyData = [];
 		var startDateTime;
 		var endDateTime;
-		var fetchCmtCnt = 0;
+		var tryLoginCnt = 0;
 		var loginKey = "";
+		var biliCookie = "";
 		var totalUrl = window.location.href;
 		var qrcode = new QRCode(document.getElementById("loginqrcode"));
 		var isLocalVersion = (totalUrl.indexOf("?localversion") != -1);
@@ -595,30 +596,53 @@
 			}
 
 			function fetchComments() {
-				++fetchCmtCnt;
 				$.ajax({
-					url: (isLocalVersion ? localDomain : onlineDomain) + "/api/Reply/" + Id + "/" + loginKey,
+					url: (isLocalVersion ? localDomain : onlineDomain) + "/api/Reply/" + Id + "/" + biliCookie,
 					type: "get",
 					headers: { "h-captcha-response": isLocalVersion ? "" : $("#captcha2")[0].children[0].attributes["data-hcaptcha-response"].nodeValue },
 					crossDomain: true,
 					success: function (data) {
-						// 未登录
-						if (data["code"] == 2) {
-							if (fetchCmtCnt > 60) {
-								$("#loginstatus").text("二维码过期，请刷新页面");
-								return;
-							}
-							$("#loginstatus").text(data["message"]);
-							setTimeout(fetchComments, 3000);
-						}
-						// 其它立即错误
-						else if (data["code"] != 0) {
+						if (data["code"] != 0) {
 							$("#fetch_container").show();
 							layer.msg(data["message"]);
 						}
 						else {
 							layer.close(layer.index);
 							refreshConfirmation(data["data"]);
+						}
+					},
+					error: function (j, e) {
+						if (j.status == 400) {
+							layer.msg("参数错误");
+						}
+						else {
+							layer.msg("服务暂不可用");
+						}
+						console.log(e);
+					},
+				});
+			}
+
+			function getLoginResult() {
+				++tryLoginCnt;
+				$.ajax({
+					url: (isLocalVersion ? localDomain : onlineDomain) + "/api/Login/result/" + loginKey,
+					type: "get",
+					crossDomain: true,
+					success: function (data) {
+						// 其它立即错误
+						if (data["code"] != 0) {
+							if (tryLoginCnt > 60) {
+								$("#loginstatus").text("二维码过期，请刷新页面");
+								return;
+							}
+							$("#loginstatus").text(data["message"]);
+							setTimeout(getLoginResult, 3000);
+						}
+						else {
+							biliCookie = data["data"];
+							layer.close(layer.index);
+							fetchComments();
 						}
 					},
 					error: function (j, e) {
@@ -660,8 +684,8 @@
 							});
 							qrcode.makeCode(data["data"]);
 
-							fetchCmtCnt = 0;
-							fetchComments();
+							tryLoginCnt = 0;
+							getLoginResult();
 						}
 					},
 					error: function (j, e) {

@@ -18,5 +18,10 @@ namespace BiliCLOnline.Services
         {
             return await webHelper.GetBilibiliLoginQRCode();
         }
+
+        public async Task<Tuple<bool, string>> GetLoginResult(string key)
+        {
+            return await webHelper.VerifyBilibiliLogin(key);
+        }
     }
 }

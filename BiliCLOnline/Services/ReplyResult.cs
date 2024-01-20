@@ -87,7 +87,7 @@ namespace BiliCLOnline.Services
             }
         }
 
-        public async Task<string> InvokeGetListTask(string formalId, string key)
+        public async Task<string> InvokeGetListTask(string formalId, string cookie)
         {
             var taskGUID = Guid.NewGuid().ToString();
             helper.guidReplyResults[taskGUID] = Tuple.Create(false, "", new List<Reply>());
@@ -143,21 +143,6 @@ namespace BiliCLOnline.Services
 
                 return taskGUID;
             }
-            #endregion
-
-            var cookie = string.Empty;
-
-            #region 验证Bilibili登录状态
-            var loginData = await webHelper.VerifyBilibiliLogin(key);
-            if (!loginData.Item1)
-            {
-                logger.LogWarning(message: $"Invalid login key: [{key}]");
-                helper.guidReplyResults.TryRemove(taskGUID, out _);
-
-                return "NOT_LOGGED_IN";
-            }
-
-            cookie = loginData.Item2;
             #endregion
 
             // 评论列表
