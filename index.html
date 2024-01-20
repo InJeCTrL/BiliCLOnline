@@ -659,7 +659,7 @@
 
 			$("#fetch").click(function () {
 				$.ajax({
-					url: (isLocalVersion ? localDomain : onlineDomain) + "/api/login/qrcode",
+					url: (isLocalVersion ? localDomain : onlineDomain) + "/api/Login/qrcode",
 					type: "get",
 					crossDomain: true,
 					success: function (data) {
