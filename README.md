@@ -144,7 +144,7 @@ MacOS用户在BiliCLOnline文件所在目录下启动终端，并执行命令：
 
 ```shell
 docker pull injectrl/biliclonline:latest
-docker run -d -it --name {name} -p 5000:5000 -e HCaptchaSecret="xxx" -e CorsTarget="xxx" -e injectrl/biliclonline:latest
+docker run -d -it --name {name} -p 5000:5000 -e HCaptchaSecret="xxx" -e CorsTarget="xxx" injectrl/biliclonline:latest
 ```
 
 ## 目前服务器端

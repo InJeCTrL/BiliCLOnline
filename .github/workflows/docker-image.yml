@@ -47,4 +47,4 @@ jobs:
               sudo docker stop bcl
               sudo docker rm bcl
               sudo docker pull injectrl/biliclonline:latest
-              sudo docker run -d -it --name bcl -p 5000:5000 -e HCaptchaSecret="${{ secrets.HCAPTCHASECRET }}" -e CorsTarget="${{ secrets.CORSTARGET }}" -e injectrl/biliclonline:latest
+              sudo docker run -d -it --name bcl -p 5000:5000 -e HCaptchaSecret="${{ secrets.HCAPTCHASECRET }}" -e CorsTarget="${{ secrets.CORSTARGET }}" injectrl/biliclonline:latest
