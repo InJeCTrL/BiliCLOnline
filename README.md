@@ -68,6 +68,7 @@ MacOS用户在BiliCLOnline文件所在目录下启动终端，并执行命令：
 2024-01-20更新：
 
 1. 抽取评论前需要B站移动端扫码登录，适应B站评论接口安全策略
+2. 服务以容器形式部署到AWS EC2
 
 2023-03-17更新：
 
@@ -137,16 +138,15 @@ MacOS用户在BiliCLOnline文件所在目录下启动终端，并执行命令：
 
 - 后端WebAPI: DotNet 7.0
 - 前端UI: LayUI 2.5.7
-- 代理API：ScrapingAnt
 - 验证码：HCaptcha
 
 ## 后端部署
 
 ```shell
 docker pull injectrl/biliclonline:latest
-docker run -d -it --name {name} -p 5000:5000 -e HCaptchaSecret="xxx" -e CorsTarget="xxx" -e SAKeys="xxx" injectrl/biliclonline:latest
+docker run -d -it --name {name} -p 5000:5000 -e HCaptchaSecret="xxx" -e CorsTarget="xxx" -e injectrl/biliclonline:latest
 ```
 
 ## 目前服务器端
 
-服务托管到Okteto
+服务以容器形式运行在AWS EC2
