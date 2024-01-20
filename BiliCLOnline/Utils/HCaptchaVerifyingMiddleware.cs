@@ -27,7 +27,7 @@ namespace BiliCLOnline.Utils
         {
             #region 获取任务结果路径 & 登录相关 无校验
             if (context.Request.Path.ToString().StartsWith("/api/Confirmation/") ||
-                context.Request.Path.ToString().StartsWith("/api/login/"))
+                context.Request.Path.ToString().StartsWith("/api/Login/"))
             {
                 await next.Invoke(context);
                 return;
