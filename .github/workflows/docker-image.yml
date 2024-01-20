@@ -33,7 +33,9 @@ jobs:
             tags: injectrl/biliclonline:latest
       -
           name: Release server key
-          run: cat << EOF >> ./key.pem
+          run: |
+            cat << EOF >> ./key.pem
+            ${{ secrets.SERVER_KEY }}
       -
           name: Login server & Deploy
           uses: appleboy/ssh-action@v1.0.3
