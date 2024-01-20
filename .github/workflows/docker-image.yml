@@ -33,7 +33,7 @@ jobs:
             tags: injectrl/biliclonline:latest
       -
           name: Release server key
-          run: echo ${{ secrets.SERVER_KEY }} > ./key.pem
+          run: cat << EOF >> ./key.pem
       -
           name: Login server & Deploy
           uses: appleboy/ssh-action@v1.0.3
