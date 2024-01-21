@@ -198,6 +198,13 @@
 										<div id="fetch_container">
 											<div id="captcha2" style="text-align:center" class="h-captcha"
 												data-sitekey="94bcabb4-f991-44ab-8dde-3b7b9fc40849"></div>
+											<hr />
+											<div class="layui-form-item">
+												<label class="layui-form-label">B站Cookie</label>
+												<div class="layui-input-block">
+													<input type="password" id="custom_cookie" class="layui-input" placeholder="不填Cookie则需要扫码登录">
+												</div>
+											</div>
 											<div>
 												<button id="fetch" type="button"
 													class="layui-btn layui-btn-normal layui-btn-lg layui-btn-radius layui-btn-fluid">获取评论</button>
@@ -658,46 +665,55 @@
 			}
 
 			$("#fetch").click(function () {
-				$.ajax({
-					url: (isLocalVersion ? localDomain : onlineDomain) + "/api/Login/qrcode",
-					type: "get",
-					crossDomain: true,
-					success: function (data) {
-						if (data["code"] != 0) {
-							layer.msg(data["message"]);
-						}
-						else {
-							$("#fetch_container").hide();
-							loginKey = data["message"];
+				let customCookie = $("#custom_cookie").val();
+				// 自定义Cookie为空则需要扫码登录
+				if (customCookie == null || customCookie == '') {
+					$.ajax({
+						url: (isLocalVersion ? localDomain : onlineDomain) + "/api/Login/qrcode",
+						type: "get",
+						crossDomain: true,
+						success: function (data) {
+							if (data["code"] != 0) {
+								layer.msg(data["message"]);
+							}
+							else {
+								$("#fetch_container").hide();
+								loginKey = data["message"];
 
-							layer.open({
-								type: 1
-								, title: false
-								, closeBtn: false
-								, area: '300px;'
-								, shade: 0.8
-								, id: 'LAY_out'
-								, resize: false
-								, btnAlign: 'c'
-								, moveType: 1
-								, content: $("#loginwnd")
-							});
-							qrcode.makeCode(data["data"]);
+								layer.open({
+									type: 1
+									, title: false
+									, closeBtn: false
+									, area: '300px;'
+									, shade: 0.8
+									, id: 'LAY_out'
+									, resize: false
+									, btnAlign: 'c'
+									, moveType: 1
+									, content: $("#loginwnd")
+								});
+								qrcode.makeCode(data["data"]);
 
-							tryLoginCnt = 0;
-							getLoginResult();
-						}
-					},
-					error: function (j, e) {
-						if (j.status == 400) {
-							layer.msg("参数错误");
-						}
-						else {
-							layer.msg("服务暂不可用");
-						}
-						console.log(e);
-					},
-				});
+								tryLoginCnt = 0;
+								getLoginResult();
+							}
+						},
+						error: function (j, e) {
+							if (j.status == 400) {
+								layer.msg("参数错误");
+							}
+							else {
+								layer.msg("服务暂不可用");
+							}
+							console.log(e);
+						},
+					});
+				}
+				// 自定义Cookie存在则直接使用
+				else {
+					biliCookie = customCookie.replaceAll(" ", "");
+					fetchComments();
+				}
 			});
 
 			$("#lottery").click(function () {

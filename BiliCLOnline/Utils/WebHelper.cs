@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -171,7 +172,9 @@ namespace BiliCLOnline.Utils
                         using var request = new HttpRequestMessage(HttpMethod.Get, URL);
                         if (!string.IsNullOrEmpty(cookie))
                         {
-                            request.Headers.Add("Cookie", cookie);
+                            request.Headers.Add(
+                                "Cookie",
+                                Encoding.ASCII.GetString(Encoding.UTF8.GetBytes(cookie)));
                         }
 
                         using var responseMsg = await BiliRequestClient.SendAsync(request);
