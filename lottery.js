@@ -3,24 +3,17 @@ self.onmessage = function (event) {
     let result = {"data": [], "count": 0, "err": false, "msg": ""};
 	
 	let filtered = [];
+	let twiceFiltered = [];
 	let uidSet = new Set();
-	
+
 	let replySet = new Set();
 	if (data.deDuplicatedReply){
 		data.data.sort(function(x, y){
-			return x.pubTime - y.pubTime;
+			return new Date(x.pubTime) - new Date(y.pubTime);
 		});
 	}
 	
 	for (let i = 0; i < data.data.length; ++i) {
-		if (data.deDuplicatedReply){
-			if (replySet.has(data.data[i].content)){
-				continue;
-			} else {
-				replySet.add(data.data[i].content);
-			}
-		}
-		
 		if (data.onlySpecified && !data.data[i].content.includes(data.contentSpecified)){
 			continue;
 		}
@@ -34,18 +27,30 @@ self.onmessage = function (event) {
 			continue;
 		}
 		
-		if (!data.duplicatedUID){
-			if (uidSet.has(data.data[i].uid)){
-				continue;
-			} else {
-				uidSet.add(data.data[i].uid);
-			}
-		}
-		
 		filtered.push(data.data[i]);
 	}
+
+	for (let i = 0; i < filtered.length; ++i) {
+		if (!data.duplicatedUID){
+			if (uidSet.has(filtered[i].uid)){
+				continue;
+			} else {
+				uidSet.add(filtered[i].uid);
+			}
+		}
+
+		if (data.deDuplicatedReply){
+			if (replySet.has(filtered[i].content)){
+				continue;
+			} else {
+				replySet.add(filtered[i].content);
+			}
+		}
+
+		twiceFiltered.push(filtered[i]);
+	}
 	
-	if (filtered.length < data.count){
+	if (twiceFiltered.length < data.count){
 		result.err = true;
 		result.msg = "符合条件的评论少于中奖人数";
 		this.postMessage(result);
@@ -53,10 +58,10 @@ self.onmessage = function (event) {
 	
 	result.count = data.count;
 	
-	for (let i = filtered.length; i > filtered.length - data.count; --i){
+	for (let i = twiceFiltered.length; i > twiceFiltered.length - data.count; --i){
 		let rnd = Math.floor(Math.random() * i);
-		result.data.push(filtered[rnd]);
-		filtered[rnd] = filtered[i - 1];
+		result.data.push(twiceFiltered[rnd]);
+		twiceFiltered[rnd] = twiceFiltered[i - 1];
 	}
 	
     this.postMessage(result);
